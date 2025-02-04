@@ -5,6 +5,7 @@ DRIVER_NAME = 'SQL SERVER'
 SERVER_NAME = 'MasonsLaptop'
 DATABASE_NAME = 'Scriptoria'
 
+
 connection = (f"""
     DRIVER={{{DRIVER_NAME}}};
     SERVER={SERVER_NAME};
@@ -14,9 +15,23 @@ connection = (f"""
     pwd=password
 """)
 
+
 app = Flask(__name__)
 conn = db.connect(connection)
+#conn = db.connect('exampleDatabaseFile.db')
 cursor = conn.cursor()
+
+
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS testDatabase (
+    id INTEGER PRIMARY KEY AUTOINCREMENT
+    name TEXT NOT NULL
+    username TEXT NOT NULL
+    password TEXT NOT NULL
+    permission INTEGER NOT NULL
+    )
+''')
+
 
 @app.route('/')
 def hello_world():  # put application's code here

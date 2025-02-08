@@ -22,16 +22,6 @@ conn = db.connect(connection)
 cursor = conn.cursor()
 
 
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS testDatabase (
-    id INTEGER PRIMARY KEY AUTOINCREMENT
-    name TEXT NOT NULL
-    username TEXT NOT NULL
-    password TEXT NOT NULL
-    permission INTEGER NOT NULL
-    )
-''')
-
 
 @app.route('/')
 def hello_world():  # put application's code here

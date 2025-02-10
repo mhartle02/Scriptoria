@@ -1,24 +1,8 @@
-from flask import Flask
-import pypyodbc as db
-
-DRIVER_NAME = 'SQL SERVER'
-SERVER_NAME = 'MasonsLaptop'
-DATABASE_NAME = 'Scriptoria'
-
-
-connection = (f"""
-    DRIVER={{{DRIVER_NAME}}};
-    SERVER={SERVER_NAME};
-    DATABASE={DATABASE_NAME};
-    Trusted_Connection=yes;
-    uid=mgh21l
-    pwd=password
-""")
-
+from flask import *
+import sqlite3
 
 app = Flask(__name__)
-conn = db.connect(connection)
-#conn = db.connect('exampleDatabaseFile.db')
+conn = sqlite3.connect('userLoginDatabase.db')
 cursor = conn.cursor()
 
 
@@ -33,6 +17,9 @@ def hello_world():  # put application's code here
         #return 'Database connection failed'
     return 'Hello World!'
 
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
 
 

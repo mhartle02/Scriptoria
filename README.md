@@ -1,5 +1,6 @@
-# COP4020L_Group17
-Semester project for COP4020L
+# Scriptoria
+Book reviewing website
 --------------------------------------
 
-test push
+Created by:
+Mason Hartle, Bryce Beck, and Phuong Nguyen

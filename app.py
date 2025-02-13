@@ -8,14 +8,14 @@ cursor = conn.cursor()
 
 
 @app.route('/')
-def hello_world():  # put application's code here
+def home():  # put application's code here
     #try:
         #test = cursor.execute("select USERNAME from users WHERE password = 'password'").fetchone()
         #print(test)
         #return test[0]
     #except:
         #return 'Database connection failed'
-    return 'Hello World!'
+    return render_template('home.html')     #Honestly idk if 'home.html' here is correct, but this should be the landing page
 
 @app.route('/login')
 def login():

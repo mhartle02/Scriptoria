@@ -1,11 +1,11 @@
 import sqlite3
 
-def initializeUserDatabase():
-    conn = sqlite3.connect('userLoginDatabase.db')
+def initializeDatabase():
+    conn = sqlite3.connect('Scriptoria.db')
     cursor = conn.cursor()
-    cursor.execute("DROP TABLE IF EXISTS userLogins")
+    cursor.execute("DROP TABLE IF EXISTS Users")
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS userLogins (
+        CREATE TABLE IF NOT EXISTS Users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         username TEXT NOT NULL,
@@ -23,17 +23,20 @@ def initializeUserDatabase():
 
     for user in exampleUsers:
         cursor.execute('''
-                INSERT INTO userLogins (name, username, password, permission)
+                INSERT INTO Users (name, username, password, permission)
                 VALUES (?, ?, ?, ?)
             ''', (user["name"], user["username"], user["password"], user["permission"]))
     conn.commit()
 
-    cursor.execute("SELECT name, username, password, permission FROM userLogins")
+    cursor.execute("SELECT name, username, password, permission FROM Users")
     rows = cursor.fetchall()
     for row in rows:
         print(f"Name: {row[0]}, Username: {row[1]}, Password: {row[2]}, Permission: {row[3]}")
     conn.close()
 
+    print("Database initialized.")
+
+
 
 if __name__ == "__main__":
-    initializeUserDatabase()
+    initializeDatabase()

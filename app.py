@@ -21,7 +21,30 @@ def home():  # put application's code here
 def login():
     return render_template('login.html')
 
+@app.route('/signup', methods=['GET','POST'])
+def signup():
+    if request.method == 'GET':
+        return render_template('signup.html', msg=None, errors=[], show_form=True)
+    #If adding fields to the database and the signup then add them below
+    if request.method == 'POST':
+        name = request.form.get('name','').strip()
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
 
+    #Add error checking to be flashed on website if new fields are needed
+        errors=[]
+        if not name:
+            errors.append("You must input a name")
+        if not username:
+            errors.append("You must input a username")
+        if not password:
+            errors.append("You must input a password")
+
+        if errors:
+            return render_template('signup.html', msg="Errors:", errors=errors, show_form=False)
+
+    #add_to_db() or other such function here to insert new user into database
+    return render_template('signup.html', msg="User successfully created!", errors=[], show_form=False)
 
 if __name__ == '__main__':
     app.run()

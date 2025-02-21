@@ -3,11 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Scriptoria Home</title>
+    <link href="../static/style.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
+    <div class = "topnav">
+        <a class = "active" href = "#home">Home</a>
+        <a href = "profile">My Books</a>
+        <a href = "bookclub">Book clubs</a>
+
+        <!--IF LOGGED IN -->
+        <div class = profile><a href = "profile">Profile</a></div>
+        <!-- #IF NOT ::
+            #sign up/login buttons -->
+
+    </div>
+
     <h1>Welcome!</h1>
     <p style="font-size: 22px;">
         <a href="/login">Login</a><br>
     </p>
 </body>
 </html>
+

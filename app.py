@@ -46,5 +46,17 @@ def signup():
     #add_to_db() or other such function here to insert new user into database
     return render_template('signup.html', msg="User successfully created!", errors=[], show_form=False)
 
+@app.route('/reset', methods = ['GET', 'POST'])
+def reset():
+    if request.method == 'GET':
+        return render_template('reset.html')
+    if request.method == 'POST':
+        new_password = request.form.get('password1')
+        password_confirm = request.form.get('password2')
+        if new_password != password_confirm:
+            flash("You enter the wrong password. Try again")
+    return render_template('reset.html', msg="Password successfully changed", errors=[], show_form=False)
+
+
 if __name__ == '__main__':
     app.run()

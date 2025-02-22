@@ -3,6 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <title>Sign Up</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            input{
+            }
+            button{
+            }
+        }
+
+        h2 {
+            font-size: 12px;
+
+        }
+    </style>
 </head>
 <body>
     <h1>Create Your Account</h1>
@@ -18,15 +46,15 @@
 
     {% if show_form %}
     <form action="./signup.html" method="POST">
-        <label for="name">Name</label><br>
+        <label for="name">Name</label>
         <input type="text" id="name" name="name" value="" required><br>
-        <label for="username">Name</label><br>
+        <label for="username">Username</label>
         <input type="text" id="username" name="name" value="" required><br>
-        <label for="password">Name</label><br>
+        <label for="password">Password</label>
         <input type="text" id="password" name="name" value="" required><br>
 
     </form>
-    {% else %}
     <a href="/">Back to Home</a>
+    {% endif %}
 </body>
 </html>

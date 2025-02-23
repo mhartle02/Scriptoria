@@ -5,7 +5,7 @@ app = Flask(__name__)
 app.secret_key = 'Secret Key'
 #We should open a connection right before we use it and close right after
 #I feel like if we do it enclosing like this then we'll close the db, and it won't get reopened for a new page
-#conn = sqlite3.connect('userLoginDatabase.db')
+#conn = sqlite3.connect('Scriptoria.db')
 #cursor = conn.cursor()
 
 app.secret_key = "keys" #needed to change the password
@@ -28,7 +28,7 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         try:
-            conn = sqlite3.connect('userLoginDatabase.db')
+            conn = sqlite3.connect('Scriptoria.db')
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT name, username, password, permission
@@ -100,7 +100,7 @@ def reset():
         new_password = request.form.get('password1')
         password_confirm = request.form.get('password2')
         try:
-            conn = sqlite3.connect('userLoginDatabase.db')
+            conn = sqlite3.connect('Scriptoria.db')
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT name, username, password, permission

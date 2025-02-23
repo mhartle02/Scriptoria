@@ -35,7 +35,7 @@
 </head>
 <body>
     <h1>Login</h1>
-    <form>
+    <form action="/login" method="POST">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>
         <br>
@@ -55,5 +55,14 @@
         </h2>
 
     </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul>
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
 </body>
 </html>

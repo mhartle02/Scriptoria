@@ -1,7 +1,7 @@
 import sqlite3
 
-def initializeUserDatabase():
-    conn = sqlite3.connect('userLoginDatabase.db')
+def initializeDb():
+    conn = sqlite3.connect('Scriptoria.db')
     cursor = conn.cursor()
     cursor.execute("DROP TABLE IF EXISTS userLogins")
     cursor.execute('''
@@ -36,4 +36,4 @@ def initializeUserDatabase():
 
 
 if __name__ == "__main__":
-    initializeUserDatabase()
+    initializeDb()

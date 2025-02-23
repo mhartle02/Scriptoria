@@ -13,9 +13,11 @@
     font-size: 17px;
 }
 
-.profile {
+.profile, .signin, .signup {
     float: right;
 }
+
+
 
 .topnav a:hover {
     background-color: #3a506b;

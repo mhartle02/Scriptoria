@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Sign Up</title>
-    <style>
+</head>
+ <style>
         body {
             display: flex;
             flex-direction: column;
@@ -31,7 +32,6 @@
 
         }
     </style>
-</head>
 <body>
     <h1>Create Your Account</h1>
     {% if msg %}
@@ -46,14 +46,15 @@
 
     {% if show_form %}
     <form action="./signup.html" method="POST">
-        <label for="name">Name</label>
+        <label for="name">Name</label><br>
         <input type="text" id="name" name="name" value="" required><br>
-        <label for="username">Username</label>
-        <input type="text" id="username" name="name" value="" required><br>
-        <label for="password">Password</label>
-        <input type="text" id="password" name="name" value="" required><br>
+        <label for="username">Username</label><br>
+        <input type="text" id="username" name="username" value="" required><br>
+        <label for="password">Password</label><br>
+        <input type="text" id="password" name="password" value="" required><br>
 
     </form>
+    {% else %}
     <a href="/">Back to Home</a>
     {% endif %}
 </body>

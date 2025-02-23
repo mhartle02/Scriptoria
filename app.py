@@ -8,7 +8,7 @@ app.secret_key = 'Secret Key'
 #conn = sqlite3.connect('userLoginDatabase.db')
 #cursor = conn.cursor()
 
-
+app.secret_key = "keys" #needed to change the password
 
 @app.route('/')
 def home():  # put application's code here
@@ -96,11 +96,32 @@ def reset():
     if request.method == 'GET':
         return render_template('reset.html')
     if request.method == 'POST':
+        username = request.form.get('username')
         new_password = request.form.get('password1')
         password_confirm = request.form.get('password2')
-        if new_password != password_confirm:
-            flash("You enter the wrong password. Try again")
-    return render_template('reset.html', msg="Password successfully changed", errors=[], show_form=False)
+        try:
+            conn = sqlite3.connect('userLoginDatabase.db')
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT name, username, password, permission
+                FROM userLogins
+                WHERE username = ?
+            """, (username,))
+            user = cursor.fetchone()
+            conn.close()
+            if user:
+                 if new_password != password_confirm:
+                    flash("You enter the wrong password. Try again", "error")
+                    return redirect(url_for('reset'))
+                 else:
+                    flash("Password changed!", "success")
+                    return redirect(url_for('login')) #if succeeded, this should redirect us to another page
+            else:
+                flash("User not found. Try again", "danger")
+        except Exception as e:
+            print(f"Error: {e}")
+            flash("An Error Occurred. Please Try Again.", 'danger')
+            return render_template('reset.html', show_form=False)
 
 
 if __name__ == '__main__':

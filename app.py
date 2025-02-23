@@ -2,8 +2,11 @@ from flask import *
 import sqlite3
 
 app = Flask(__name__)
-conn = sqlite3.connect('userLoginDatabase.db')
-cursor = conn.cursor()
+app.secret_key = 'Secret Key'
+#We should open a connection right before we use it and close right after
+#I feel like if we do it enclosing like this then we'll close the db, and it won't get reopened for a new page
+#conn = sqlite3.connect('userLoginDatabase.db')
+#cursor = conn.cursor()
 
 
 
@@ -17,9 +20,51 @@ def home():  # put application's code here
         #return 'Database connection failed'
     return render_template('home.html')     #Honestly idk if 'home.html' here is correct, but this should be the landing page
 
-@app.route('/login')
+@app.route('/login', methods =['GET', 'POST'])
 def login():
-    return render_template('login.html')
+    if request.method == 'GET':
+        return render_template('login.html')
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        try:
+            conn = sqlite3.connect('userLoginDatabase.db')
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT name, username, password, permission
+                FROM userLogins
+                WHERE username = ?
+            """, (username,))
+            user = cursor.fetchone()
+            conn.close()
+
+            #Debugging
+            print(f"Query Result: {user}")
+
+            if user:
+                session['username'] = user[1]
+                session['permission'] = user[3]
+                """
+                #If we redirect based on the permission level of the user, we can handle it here
+                if session['permission'] == "reader":
+                    return redirect(...)
+                if session['permission'] == "admin":
+                    return redirect(...)
+                if session['permission'] == "author":
+                    return redirect(...)
+                """
+
+                #This is temporary until we decide how to utilize user permissions
+                return render_template('home.html')
+
+            else:
+                flash("Invalid username or password", 'danger')
+        except Exception as e:
+            #Logging Error for debugging
+            print(f"Error During login: {e}")
+            flash("An Error Occurred. Please Try Again.", 'danger')
+            return render_template('login.html')
+
 
 @app.route('/signup', methods=['GET','POST'])
 def signup():

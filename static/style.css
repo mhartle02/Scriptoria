@@ -1,3 +1,8 @@
+.active {
+    background-color: black;
+    color: white;
+}
+
 .topnav {
     background-color: grey;
     overflow: hidden;
@@ -13,16 +18,11 @@
     font-size: 17px;
 }
 
-.profile {
-    float: right;
-}
-
 .topnav a:hover {
     background-color: #3a506b;
     color: black;
 }
 
-.active {
-    background-color: black;
-    color: white;
+.profile, .signin, .signup, .logout {
+    float: right;
 }

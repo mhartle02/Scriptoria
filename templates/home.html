@@ -8,20 +8,19 @@
 <body>
     <div class = "topnav">
         <a class = "active" href = "#home">Home</a>
-        <a href = "profile">My Books</a>
-        <a href = "bookclub">Book clubs</a>
 
-
-        <!--IF LOGGED IN -->
-        <div class = profile><a href = "profile">Profile</a></div>
-        <!-- #IF NOT ::
-            #sign up/login buttons -->
-
+        {% if session['username']%}
+            <a href = "profile">My Books</a>
+            <a href = "bookclub">Book clubs</a>
+            <div class = profile><a href = "profile">Profile</a></div>
+            <div class = logout><a href="{{ url_for('logout') }}">Log Out</a></div>
+        {% else %}
+            <div class = signup><a href = "signup">Sign Up</a></div>
+            <div class = signin><a href="login">Log in</a> </div>
+        {% endif %}
     </div>
 
-    <h1>Welcome!</h1>
-    <p style="font-size: 22px;">
-        <a href="/login">Login</a><br>
+    <h1>Welcome {{ session['username']}}!</h1>
     </p>
 </body>
 </html>

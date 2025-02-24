@@ -123,6 +123,11 @@ def reset():
             flash("An Error Occurred. Please Try Again.", 'danger')
             return render_template('reset.html', show_form=False)
 
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('home'))
+
 
 if __name__ == '__main__':
     app.run()

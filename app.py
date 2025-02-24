@@ -1,5 +1,6 @@
 from flask import *
 import sqlite3
+from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'Secret Key'
@@ -89,6 +90,7 @@ def signup():
             return render_template('signup.html', msg="Errors:", errors=errors, show_form=False)
 
     #add_to_db() or other such function here to insert new user into database
+
     return render_template('signup.html', msg="User successfully created!", errors=[], show_form=False)
 
 @app.route('/reset', methods = ['GET', 'POST'])
@@ -103,21 +105,25 @@ def reset():
             conn = sqlite3.connect('Scriptoria.db')
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT name, username, password, permission
+                SELECT username
                 FROM userLogins
                 WHERE username = ?
             """, (username,))
             user = cursor.fetchone()
-            conn.close()
             if user:
                  if new_password != password_confirm:
                     flash("You enter the wrong password. Try again", "error")
                     return redirect(url_for('reset'))
                  else:
+                    cursor.execute("UPDATE userLogins SET password = ? WHERE username = ?",
+                                   (new_password, username))
+                    conn.commit()
+                    conn.close()
                     flash("Password changed!", "success")
-                    return redirect(url_for('login')) #if succeeded, this should redirect us to another page
-            else:
+                    return redirect(url_for('login')) #if succeeded, this should redirect us to login page (or some other page)
+            if not user:
                 flash("User not found. Try again", "danger")
+                return redirect(url_for('reset'))
         except Exception as e:
             print(f"Error: {e}")
             flash("An Error Occurred. Please Try Again.", 'danger')

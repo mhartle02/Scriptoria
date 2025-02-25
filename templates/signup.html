@@ -46,25 +46,30 @@
     {% endif %}
 
     {% if show_form %}
-    <form action="./signup.html" method="POST">
+    <form action="./signup" method="POST">
         <label for="name">Name</label><br>
         <input type="text" id="name" name="name" value="" required><br>
         <label for="username">Username</label><br>
         <input type="text" id="username" name="username" value="" required><br>
-        <label>Choose a role </label>
-        <div class="wrapper" >
-            <select name="" id="" class="form-control">
-                <option value="">Reader</option>
-                <option value="">Admin</option>
-                <option value="">Author</option>
-            </select>
-        </div>
         <label for="password">Password</label><br>
         <input type="text" id="password" name="password" value="" required><br>
-
+        <label> Choose a role/permission </label>
+            <div class="wrapper" >
+                <select name="permission" id="permission">
+                    <option value="">Reader</option>
+                    <option value="">Admin</option>
+                    <option value="">Author</option>
+                </select>
+        </div>
         <button> Create account </button>
     </form>
-
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            {% for category, msg in messages%}
+                <p class="{{ category }}">{{ msg }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     {% else %}
     <a href="/">Back to Home</a>
     {% endif %}

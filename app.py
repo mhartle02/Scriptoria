@@ -77,6 +77,7 @@ def signup():
         name = request.form.get('name','').strip()
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
+        permission = request.form.get('permission')
 
     #Add error checking to be flashed on website if new fields are needed
         errors=[]
@@ -90,6 +91,18 @@ def signup():
         if errors:
             return render_template('signup.html', msg="Errors:", errors=errors, show_form=False)
 
+        else:
+            conn = sqlite3.connect('Scriptoria.db')
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO userLogins (name, username, password, permission)
+                VALUES (?, ?, ?, ?)
+            ''', (name, username, password, permission))
+            conn.commit()
+            conn.close()
+            flash("User created!", "success")
+            return redirect(url_for('home'))
+            # temporary, will change depending on the role/permission one have
     #add_to_db() or other such function here to insert new user into database
 
     return render_template('signup.html', msg="User successfully created!", errors=[], show_form=False)

@@ -53,15 +53,15 @@
         <input type="text" id="username" name="username" value="" required><br>
         <label for="password">Password</label><br>
         <input type="text" id="password" name="password" value="" required><br>
-        <label> Choose a role/permission </label>
+        <label> Choose a role/permission </label><br>
             <div class="wrapper" >
-                <select name="permission" id="permission">
+                <select id="permission" name="permission">
                     <option value="">Reader</option>
                     <option value="">Admin</option>
                     <option value="">Author</option>
                 </select>
-        </div>
-        <button> Create account </button>
+            </div><br>
+        <button> Create new account </button>
     </form>
     {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}

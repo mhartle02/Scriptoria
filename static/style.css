@@ -26,3 +26,18 @@
 .profile, .signin, .signup, .logout {
     float: right;
 }
+
+.footernav {
+    position: fixed;
+    left: 0px;
+    bottom: 0px;
+    width: 100%;
+    background-color: #deaf83;
+    color: #f2f2f2;
+}
+
+.footersignin, .footersignup, .footerlogout {
+    float: left;
+    padding: 14px 16px;
+    font-size: 17px;
+}

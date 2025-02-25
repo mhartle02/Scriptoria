@@ -16,9 +16,9 @@ def initializeDb():
 
     #Temporary, for debugging
     exampleUsers = [
-        {"name": "John", "username": "Reader", "password": "Password", "permission": "reader"},
-        {"name": "John", "username": "Admin", "password": "Password", "permission": "admin"},
-        {"name": "John", "username": "Author", "password": "Password", "permission": "author"}
+        {"name": "John", "username": "reader", "password": "1000", "permission": "Reader"},
+        {"name": "John", "username": "admin", "password": "1234", "permission": "Admin"},
+        {"name": "John", "username": "author", "password": "2345", "permission": "Author"}
     ]
 
     for user in exampleUsers:

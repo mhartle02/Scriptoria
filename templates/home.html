@@ -19,8 +19,17 @@
             <div class = signin><a href="login">Log in</a> </div>
         {% endif %}
     </div>
+    <div class = "footernav">
+        {% if session['username']%}
+            <div class = footerlogout><a href="{{ url_for('logout') }}">Log Out</a></div>
+        {% else %}
+        <div class = footersignup><a href = "signup">Sign Up</a></div>
+        <div class = footersignin><a href="login">Log in</a></div>
+        {% endif %}
+    </div>
 
-    <h1>Welcome {{ session['username']}}!</h1>
+
+    <h1>Welcome {{ session['name']}}!</h1>
     </p>
 </body>
 </html>

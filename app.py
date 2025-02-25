@@ -27,6 +27,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+
         try:
             conn = sqlite3.connect('Scriptoria.db')
             cursor = conn.cursor()
@@ -44,6 +45,7 @@ def login():
             if user:
                 session['username'] = user[1]
                 session['permission'] = user[3]
+                session['name'] = user[0]
                 """
                 #If we redirect based on the permission level of the user, we can handle it here
                 if session['permission'] == "reader":

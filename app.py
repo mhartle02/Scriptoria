@@ -1,5 +1,6 @@
 from flask import *
 import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'Secret Key'
@@ -92,12 +93,13 @@ def signup():
             return render_template('signup.html', msg="Errors:", errors=errors, show_form=False)
 
         else:
+            hashed_password = generate_password_hash(password)
             conn = sqlite3.connect('Scriptoria.db')
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO userLogins (name, username, password, permission)
                 VALUES (?, ?, ?, ?)
-            ''', (name, username, password, permission))
+            ''', (name, username, hashed_password, permission))
             conn.commit()
             conn.close()
             flash("User created!", "success")
@@ -129,8 +131,9 @@ def reset():
                     flash("You enter the wrong password. Try again", "error")
                     return redirect(url_for('reset'))
                  else:
+                    hashed_password = generate_password_hash(new_password)
                     cursor.execute("UPDATE userLogins SET password = ? WHERE username = ?",
-                                   (new_password, username))
+                                   (hashed_password, username))
                     conn.commit()
                     conn.close()
                     flash("Password changed!", "success")
@@ -147,7 +150,6 @@ def reset():
 def logout():
     session.clear()
     return redirect(url_for('home'))
-
 
 if __name__ == '__main__':
     app.run()

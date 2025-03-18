@@ -28,9 +28,18 @@
         {% endif %}
     </div>
 
+    <div class='background'>
+        {% if session['username']%}
+            <h1>Welcome {{ session['name']}}!</h1>
+        {% else %}
+            <h1>Welcome!</h1>
+        {%endif%}
+        <form action="" class="search-bar">
+            <input type="text" placeholder="Search a book..." name="q">
+            <button type="submit"><img src="../images/search.png"></button>
+        </form>
+    </div>
 
-    <h1>Welcome {{ session['name']}}!</h1>
-    </p>
 </body>
 </html>
 

@@ -1,5 +1,11 @@
+
 import requests
+import sys
+import os
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(path)
 from classes import book
+
 
 API_KEY = "AIzaSyDHIFBhhb6fnzBS0-GcXap4bh5IIbF-KnI"
 BASE_URL = "https://www.googleapis.com/books/v1/volumes"
@@ -23,8 +29,7 @@ def search_books(query, max_results=5):
 
         for item in books:
             volume_info = item.get("volumeInfo", {})
-            book_result= book.book(title = volume_info.get("title", "No title available", authors = volume_info.get("authors", ["Unknown author"]),
-                                                       description = volume_info.get("description", "No description available")))
+            book_result= book.book(volume_info.get("title", ["Unknown Title"]), volume_info.get("authors", ["Unknown author"]),volume_info.get("description", "No description available"))
 
             results.append(book_result)
 
@@ -34,6 +39,6 @@ def search_books(query, max_results=5):
 
 
 if __name__ == "__main__":
-    books_info = search_books("East of Eden") #Pass in book name
-    print(books_info)
+    #books_info = search_books("East of Eden") #Pass in book name
+    #print(books_info[0].title)
 

@@ -70,7 +70,7 @@
     outline: none;
     padding: 20px 18px;
     font-size: 18px;
-    color: #cac7ff;
+    color: #000000;
 }
 
 
@@ -85,4 +85,21 @@
     height: 60px;
     background: #e06d65;
     cursor: pointer;
+}
+
+.book-results {
+    margin-top: 20px;
+}
+
+.book-results ul {
+    list-style: none;
+    padding: 0;
+}
+
+.book-results li {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.5);
 }

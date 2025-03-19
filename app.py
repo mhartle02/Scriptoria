@@ -1,6 +1,7 @@
 from flask import *
 import sqlite3, requests
 from werkzeug.security import generate_password_hash, check_password_hash
+from classes.book import *
 
 app = Flask(__name__)
 app.secret_key = 'Secret Key'
@@ -10,20 +11,6 @@ app.secret_key = 'Secret Key'
 #cursor = conn.cursor()
 
 app.secret_key = "keys" #needed to change the password
-
-class Book:
-    def __init__(self, book_id, title, authors, description, page_count, cover_image, published_date, reviews, buy_link):
-        self.book_id = book_id
-        self.title = title
-        self.authors = authors
-        self.description = description
-        self.page_count = page_count
-        self.cover_image = cover_image
-        self.published_date = published_date
-        #self.reviews = reviews     #Need to return to
-        self.buy_link = buy_link
-    def __str__(self):
-        return f"Title: {self.title}\nAuthors: {', '.join(self.authors)}\nPublished: {self.published_date}\nMore Info: {self.buy_link}\n"
 
 def fetch_books(query, max_results=5):
     #Arbitrary max_results number, for testing
@@ -35,27 +22,24 @@ def fetch_books(query, max_results=5):
     for item in data.get('items', []):
         volume_info = item.get('volumeInfo', {})
         book = Book(
-            book_id=volume_info.get('id', 'Unknown ID'),
+        #The fields commented out below can be deleted, but could also be used as additional info for books
+            #book_id=volume_info.get('id', 'Unknown ID'),
             title=volume_info.get('title', 'Unknown Title'),
             authors=volume_info.get('authors', ['Unknown Author']),
             description=volume_info.get('description', 'No Description'),
             page_count=volume_info.get('pageCount', 0),
-            published_date=volume_info.get('publishedDate', 'Unknown Date'),
+            #published_date=volume_info.get('publishedDate', 'Unknown Date'),
             cover_image=volume_info.get('imageLinks', {}).get('thumbnail', ''),
-            buy_link=item.get('saleInfo', {}).get('buyLink', '')
+            #buy_link=item.get('saleInfo', {}).get('buyLink', '')
         )
         books.append(book)
     return books
 
-@app.route('/')
-def home():  # put application's code here
-    #try:
-        #test = cursor.execute("select USERNAME from users WHERE password = 'password'").fetchone()
-        #print(test)
-        #return test[0]
-    #except:
-        #return 'Database connection failed'
-    return render_template('home.html')     #Honestly idk if 'home.html' here is correct, but this should be the landing page
+@app.route('/', methods=['GET'])
+def home():
+    query = request.args.get("q","")    #Get search query from search-bar form
+    books = fetch_books(query) if query else []     #Only search for books if a query does exist
+    return render_template('home.html', books=books, query=query)
 
 @app.route('/login', methods =['GET', 'POST'])
 def login():

@@ -48,7 +48,7 @@
                 <li>
                     <img src="{{ book.cover_image }}" alt="Book Cover" style="height:100px;">
                     <h3>{{ book.title }}</h3>
-                    <p>By: {{ book.authors | join(', ') }}</p>
+                    <p>By: {{ book.authors }}</p>
                     <p>{{ book.description }}</p>
                     <p>Pages: {{ book.page_count }}</p>
                 </li>

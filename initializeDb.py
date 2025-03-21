@@ -32,6 +32,36 @@ def initializeDb():
     rows = cursor.fetchall()
     for row in rows:
         print(f"Name: {row[0]}, Username: {row[1]}, Password: {row[2]}, Permission: {row[3]}")
+    #conn.close()
+
+    #Making reviews database
+    cursor.execute("DROP TABLE IF EXISTS userReviews")
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS userReviews (
+        review_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        book_id INTEGER NOT NULL,
+        review_text TEXT NOT NULL,
+        rating INTEGER CHECK(rating BETWEEN 1 and 5),
+        FOREIGN KEY (user_id) REFERENCES userLogins(id) ON DELETE CASCADE,
+        FOREIGN KEY (book_id) REFERENCES Books(book_id) ON DELETE CASCADE
+        )
+    ''')
+
+    cursor.execute("DROP TABLE IF EXISTS Books")
+    print("Books Database Cleared")
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Books (
+            book_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            author TEXT NOT NULL,
+            description TEXT,
+            page_count INTEGER,
+            cover_image TEXT            
+            )
+        ''')
+
+
     conn.close()
 
 

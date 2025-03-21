@@ -21,6 +21,10 @@ def fetch_books(query, max_results=5):
     books = []
     for item in data.get('items', []):
         volume_info = item.get('volumeInfo', {})
+
+        #Debugging for author comma issue
+        #print(f"Raw authors data: {volume_info.get('authors')}")
+
         book = Book(
         #The fields commented out below can be deleted, but could also be used as additional info for books
             #book_id=volume_info.get('id', 'Unknown ID'),
@@ -28,12 +32,45 @@ def fetch_books(query, max_results=5):
             authors=volume_info.get('authors', ['Unknown Author']),
             description=volume_info.get('description', 'No Description'),
             page_count=volume_info.get('pageCount', 0),
-            #published_date=volume_info.get('publishedDate', 'Unknown Date'),
             cover_image=volume_info.get('imageLinks', {}).get('thumbnail', ''),
-            #buy_link=item.get('saleInfo', {}).get('buyLink', '')
         )
         books.append(book)
+    #Inserting fetched books into book database
+    insert_books_into_db(books)
     return books
+
+def insert_books_into_db(books):
+    #Insert books into db while screening for dupes
+    conn = sqlite3.connect('Scriptoria.db')
+    cursor = conn.cursor()
+    #Checking that table exists
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS booksTable (
+            book_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            author TEXT NOT NULL,
+            description TEXT,
+            page_count INTEGER,
+            cover_image TEXT            
+        )
+    ''')
+
+    for book in books:
+        #CHeck that book isn't already in database
+        cursor.execute("SELECT book_id FROM Books WHERE title = ? AND author = ?", (book.title, book.authors))
+        existing_book = cursor.fetchone()
+
+        if existing_book is None:
+            cursor.execute('''
+                INSERT INTO Books (title, author, description, page_count, cover_image)
+                VALUES (?, ?, ?, ?, ?)    
+            ''', (book.title, book.authors, book.description, book.page_count, book.cover_image))
+
+            #Debugging
+            print(f"Added book to database: {book.title}")
+
+    conn.commit()
+    conn.close()
 
 @app.route('/', methods=['GET'])
 def home():

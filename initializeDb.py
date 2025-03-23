@@ -57,9 +57,26 @@ def initializeDb():
             author TEXT NOT NULL,
             description TEXT,
             page_count INTEGER,
-            cover_image TEXT            
+            cover_image TEXT,
+            average_rating REAL DEFAULT 0            
             )
-        ''')
+    ''')
+
+    cursor.execute('''
+        CREATE TRIGGER IF NOT EXISTS update_book_rating
+        AFTER INSERT ON userReviews
+        FOR EACH ROW
+        BEGIN
+            UPDATE Books
+            SET average_rating = (
+                SELECT AVG(rating) FROM userReviews WHERE book_id = NEW.book_id
+            )
+            WHERE book_id = NEW.book_id;
+        END;
+    ''')
+
+    #Later: Allow users to update reviews and delete reviews and create triggers to table like above ^
+
 
 
     conn.close()

@@ -51,6 +51,23 @@
                     <p>By: {{ book.authors }}</p>
                     <p>{{ book.description }}</p>
                     <p>Pages: {{ book.page_count }}</p>
+
+                    <div class="star-rating">
+                        {% set full_stars = book.average_rating | int %}
+                        {% set half_star = 1 if (book.average_rating - full_stars) >= 0.5 else 0 %}
+                        {% set empty_stars = 5 - full_stars - half_star %}
+
+                        {% for _ in range(full_stars) %}
+                            <span class="star full">★</span>
+                        {% endfor %}
+                        {% if half_star %}
+                            <span class="star half">★</span>
+                        {% endif %}
+                        {% for _ in range(empty_stars) %}
+                            <span class="star empty">☆</span>
+                        {% endfor %}
+                        <span class="rating-text">({{ "%.1f"|format(book.average_rating) }})</span>
+                    </div>
                 </li>
                 {% endfor %}
             </ul>

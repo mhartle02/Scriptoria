@@ -38,6 +38,14 @@ def fetch_books(query, max_results=5):
     insert_books_into_db(books)
     return books
 
+def add_books_into_users_list(books):
+    conn = sqlite3.connect('Scriptoria.db')
+    cursor = conn.cursor()
+    userList = []
+
+
+
+    return
 def insert_books_into_db(books):
     #Insert books into db while screening for dupes
     conn = sqlite3.connect('Scriptoria.db')
@@ -78,9 +86,7 @@ def insert_books_into_db(books):
 
 @app.route('/', methods=['GET'])
 def home():
-    query = request.args.get("q","")    #Get search query from search-bar form
-    books = fetch_books(query) if query else []     #Only search for books if a query does exist
-    return render_template('home.html', books=books, query=query)
+    return render_template('home.html')
 
 @app.route('/login', methods =['GET', 'POST'])
 def login():
@@ -108,15 +114,14 @@ def login():
                 session['username'] = user[1]
                 session['permission'] = user[3]
                 session['name'] = user[0]
-                """
                 #If we redirect based on the permission level of the user, we can handle it here
-                if session['permission'] == "reader":
-                    return redirect(...)
-                if session['permission'] == "admin":
-                    return redirect(...)
+                if session['permission'] == "Reader":
+                    return redirect(url_for('reader'))
+                """"if session['permission'] == "Admin":
+                    return redirect(url_for('admin'))
                 if session['permission'] == "author":
-                    return redirect(...)
-                """
+                    return redirect(url_for('author'))"""
+
 
                 #This is temporary until we decide how to utilize user permissions
                 return render_template('home.html')
@@ -205,6 +210,12 @@ def reset():
             print(f"Error: {e}")
             flash("An Error Occurred. Please Try Again.", 'danger')
             return render_template('reset.html', show_form=False)
+
+@app.route('/reader', methods = ['GET', 'POST'])
+def reader():
+    query = request.args.get("q", "")  # Get search query from search-bar form
+    books = fetch_books(query) if query else []  # Only search for books if a query does exist
+    return render_template('reader.html', books=books, query=query)
 
 @app.route('/logout')
 def logout():

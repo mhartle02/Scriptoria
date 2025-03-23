@@ -22,9 +22,6 @@ def fetch_books(query, max_results=5):
     for item in data.get('items', []):
         volume_info = item.get('volumeInfo', {})
 
-        #Debugging for author comma issue
-        #print(f"Raw authors data: {volume_info.get('authors')}")
-
         book = Book(
         #The fields commented out below can be deleted, but could also be used as additional info for books
             #book_id=volume_info.get('id', 'Unknown ID'),
@@ -33,6 +30,8 @@ def fetch_books(query, max_results=5):
             description=volume_info.get('description', 'No Description'),
             page_count=volume_info.get('pageCount', 0),
             cover_image=volume_info.get('imageLinks', {}).get('thumbnail', ''),
+            average_rating=volume_info.get('averageRating', 0.0)  #Default 'extracted' rating to 0.0
+
         )
         books.append(book)
     #Inserting fetched books into book database
@@ -43,7 +42,9 @@ def insert_books_into_db(books):
     #Insert books into db while screening for dupes
     conn = sqlite3.connect('Scriptoria.db')
     cursor = conn.cursor()
-    #Checking that table exists
+
+    #testing if following code is necessary
+    """
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS booksTable (
             book_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,6 +55,7 @@ def insert_books_into_db(books):
             cover_image TEXT            
         )
     ''')
+    """
 
     for book in books:
         #CHeck that book isn't already in database
@@ -62,12 +64,14 @@ def insert_books_into_db(books):
 
         if existing_book is None:
             cursor.execute('''
-                INSERT INTO Books (title, author, description, page_count, cover_image)
-                VALUES (?, ?, ?, ?, ?)    
-            ''', (book.title, book.authors, book.description, book.page_count, book.cover_image))
+                INSERT INTO Books (title, author, description, page_count, cover_image, average_rating)
+                VALUES (?, ?, ?, ?, ?, ?)    
+            ''', (book.title, book.authors, book.description, book.page_count, book.cover_image, book.average_rating))
 
             #Debugging
             print(f"Added book to database: {book.title}")
+            #Debugging pt2
+            print(f"Rating: {book.average_rating}")
 
     conn.commit()
     conn.close()

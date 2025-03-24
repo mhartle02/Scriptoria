@@ -156,3 +156,21 @@ textarea {
     height: 100px;
     margin-top: 5px;
 }
+
+button {
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#reviewForm {
+    display: none;
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+}

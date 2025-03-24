@@ -161,6 +161,9 @@ def signup():
                 VALUES (?, ?, ?, ?)
             ''', (name, username, hashed_password, permission))
             conn.commit()
+            cursor.execute('''SELECT id FROM userLogins WHERE username = ?''', (username,))
+            new_user = cursor.fetchone()
+            user_id = new_user[0]
             conn.close()
             flash("User created!", "success")
             return redirect(url_for('home'))
@@ -208,6 +211,7 @@ def reset():
 @app.route('/reader', methods = ['GET', 'POST'])
 def reader(): #title, author, description, page_count, cover_image, average_rating
     if request.method == 'POST':
+        user_id = session['user_id']
         title = request.form.get('title')
         author = request.form.get('author')
         description = request.form.get('description')
@@ -217,14 +221,15 @@ def reader(): #title, author, description, page_count, cover_image, average_rati
 
         conn = sqlite3.connect('Scriptoria.db')
         cursor = conn.cursor()
+
         cursor.execute("SELECT book_id FROM myBooks WHERE title = ? AND author = ?", (title, author))
         existing_book = cursor.fetchone()
 
         if existing_book is None:
             cursor.execute('''
-                    INSERT INTO myBooks (title, author, description, page_count, cover_image, average_rating)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ''', (title, author, description, page_count, cover_image, average_rating))
+                    INSERT INTO myBooks (user_id, title, author, description, page_count, cover_image, average_rating)
+                    VALUES (?,?, ?, ?, ?, ?, ?)
+                ''', (user_id, title, author, description, page_count, cover_image, average_rating))
             conn.commit()
             flash("Book added to your reading list!", "success")
         else:

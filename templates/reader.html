@@ -10,7 +10,7 @@
         <a class = "active" href = "#home">Home</a>
 
         {% if session['username']%}
-            <a href = "profile">My Books</a>
+            <a href = "my_books">My Books</a>
             <a href = "bookclub">Book clubs</a>
             <div class = profile><a href = "profile">Profile</a></div>
             <div class = review><a href = "review">Make a Review</a></div>
@@ -75,6 +75,13 @@
                             <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
                             <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
                             <button type="submit">Add to My Books</button>
+                                {% with messages = get_flashed_messages(with_categories=true) %}
+                                {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="flash-message {{ category }}">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
                         </form>
                     </div>
                 </li>

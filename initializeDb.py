@@ -81,12 +81,14 @@ def initializeDb():
     cursor.execute('''
             CREATE TABLE IF NOT EXISTS myBooks (
             book_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
             title TEXT NOT NULL,
             author TEXT NOT NULL,
             description TEXT,
             page_count INTEGER,
             cover_image TEXT,
-            average_rating REAL DEFAULT 0            
+            average_rating REAL DEFAULT 0,
+            FOREIGN KEY (user_id) REFERENCES userLogins(id) ON DELETE CASCADE      
             )
     ''')
 

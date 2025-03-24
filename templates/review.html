@@ -5,12 +5,22 @@
     <title>Submit a Review</title>
     <link href="../static/style.css" type="text/css" rel="stylesheet" />
     <script>
-        function showReviewForm(bookId, title) {
+        function showReviewForm(bookId, title, buttonElement) {
             console.log("Opening Review for: ",title);  //Debugging
-            document.getElementById("selectedBookTitle").innerText = title;
-            document.getElementById("book_id").value = bookId;
-            document.getElementById("reviewForm").style.display = "block";
-            console.log("Form should now be visible!"); //Also Debugging
+            let existingForm = document.querySelector(".dynamic-review-form");
+            if (existingForm) {
+                existingForm.remove();
+            }
+
+            let reviewForm = document.getElementById("reviewForm").cloneNode(true);
+            reviewForm.style.display = "block"; //Show review form
+            reviewForm.classList.add("dynamic-review-form"); //Assigning the dynamic class to enable removal
+            reviewForm.querySelector("#selectedBookTitle").innerText = title;
+            reviewForm.querySelector("#book_id").value = bookId;
+
+            //Find selected book's associated container
+            let bookItem = buttonElement.closest("li");
+            bookItem.appendChild(reviewForm);
         }
     </script>
 </head>
@@ -28,6 +38,9 @@
     <div class = "background">
         <div class="container">
         <h1>Submit a Book Review</h1>
+        {% if not session['username']%}
+        <h2>Please Log In to leave a review!</h2>
+        {% else %}
 
         <!-- Book Search Bar -->
         <form action="/review" method="GET" class="search-bar">
@@ -45,7 +58,7 @@
                     <h3>{{ book.title }}</h3>
                     <p>By: {{ book.authors }}</p>
                     <p>{{ book.description }}</p>
-                    <button type="button" onclick="showReviewForm('{{ book.book_id }}', '{{ book.title|escape }}')">Make a Review</button>
+                    <button onclick="showReviewForm('{{ book.book_id }}', '{{ book.title }}', this)">Make a Review</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -72,6 +85,7 @@
             </form>
         </div>
     </div>
+     {% endif %}
     </div>
 </body>
 </html>

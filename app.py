@@ -113,6 +113,7 @@ def login():
             print(f"Query Result: {user}")
 
             if user:
+
                 session['username'] = user[1]
                 session['permission'] = user[3]
                 session['name'] = user[0]
@@ -227,12 +228,13 @@ def logout():
 @app.route("/review", methods=["GET", "POST"])
 def review():
     if request.method == "POST":
+        user_id = session['user_id']
         book_id = request.form.get("book_id")
         review_text = request.form.get("review")
         rating = int(request.form.get("rating"))
 
         #Inserting review into database and update average rating
-        insert_review(book_id, review_text, rating)
+        insert_review(user_id, book_id, review_text, rating)
 
         return redirect(url_for("review"))
 
@@ -240,27 +242,17 @@ def review():
     books = fetch_books(query)  #Fetching book from database
     return render_template("review.html", books=books, query=query)
 
-def insert_review(book_id, review_text, rating):
+def insert_review(user_id, book_id, review_text, rating):
     conn = sqlite3.connect("Scriptoria.db")
     cursor = conn.cursor()
 
-    # Ensure userReviews table exists
+    #Insert review
     cursor.execute('''
-            CREATE TABLE IF NOT EXISTS userReviews (
-                review_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                book_id TEXT NOT NULL,  -- Google Books API Volume ID
-                review_text TEXT NOT NULL,
-                rating INTEGER NOT NULL
-            )
-        ''')
+            INSERT INTO userReviews (user_id, book_id, review_text, rating)
+            VALUES (?, ?, ?, ?)
+        ''', (user_id, book_id, review_text, rating))
 
-    # Insert review
-    cursor.execute('''
-            INSERT INTO userReviews (book_id, review_text, rating)
-            VALUES (?, ?, ?)
-        ''', (book_id, review_text, rating))
-
-    # Update the average rating for the book
+    #Update the average rating for the book
     cursor.execute('''
             INSERT INTO Books (book_id, title, author, description, page_count, cover_image, average_rating)
             SELECT ?, '', '', '', 0, '', 0.0

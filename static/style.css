@@ -174,3 +174,12 @@ button {
     border: 1px solid #ccc;
     background-color: #f9f9f9;
 }
+
+.dynamic-review-form {
+    margin-top: 10px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    width: 90%;
+    max-width: 500px;
+}

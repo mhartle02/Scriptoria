@@ -38,14 +38,7 @@ def fetch_books(query, max_results=5):
     insert_books_into_db(books)
     return books
 
-def add_books_into_users_list(books):
-    conn = sqlite3.connect('Scriptoria.db')
-    cursor = conn.cursor()
-    userList = []
 
-
-
-    return
 def insert_books_into_db(books):
     #Insert books into db while screening for dupes
     conn = sqlite3.connect('Scriptoria.db')
@@ -111,13 +104,14 @@ def login():
             print(f"Query Result: {user}")
 
             if user:
+
                 session['username'] = user[1]
                 session['permission'] = user[3]
                 session['name'] = user[0]
                 #If we redirect based on the permission level of the user, we can handle it here
                 if session['permission'] == "Reader":
                     return redirect(url_for('reader'))
-                """"if session['permission'] == "Admin":
+                """if session['permission'] == "Admin":
                     return redirect(url_for('admin'))
                 if session['permission'] == "author":
                     return redirect(url_for('author'))"""
@@ -212,15 +206,84 @@ def reset():
             return render_template('reset.html', show_form=False)
 
 @app.route('/reader', methods = ['GET', 'POST'])
-def reader():
-    query = request.args.get("q", "")  # Get search query from search-bar form
-    books = fetch_books(query) if query else []  # Only search for books if a query does exist
-    return render_template('reader.html', books=books, query=query)
+def reader(): #title, author, description, page_count, cover_image, average_rating
+    if request.method == 'POST':
+        title = request.form.get('title')
+        author = request.form.get('author')
+        description = request.form.get('description')
+        page_count = request.form.get('page_count')
+        cover_image = request.form.get('cover_image')
+        average_rating = request.form.get('average_rating')
+
+        conn = sqlite3.connect('Scriptoria.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT book_id FROM myBooks WHERE title = ? AND author = ?", (title, author))
+        existing_book = cursor.fetchone()
+
+        if existing_book is None:
+            cursor.execute('''
+                    INSERT INTO myBooks (title, author, description, page_count, cover_image, average_rating)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (title, author, description, page_count, cover_image, average_rating))
+            conn.commit()
+            flash("Book added to your reading list!", "success")
+        else:
+            flash("Book already in your list.", "warning")
+        conn.close()
+        return redirect(url_for('reader'))
+    books = fetch_books(query="GET")
+    return render_template('reader.html', books=books)
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+@app.route("/review", methods=["GET", "POST"])
+def review():
+    if request.method == "POST":
+        user_id = session['user_id']
+        book_id = request.form.get("book_id")
+        review_text = request.form.get("review")
+        rating = int(request.form.get("rating"))
+
+        #Inserting review into database and update average rating
+        insert_review(user_id, book_id, review_text, rating)
+
+        return redirect(url_for("review"))
+
+    query = request.args.get("q", "")
+    books = fetch_books(query)  #Fetching book from database
+    return render_template("review.html", books=books, query=query)
+
+def insert_review(user_id, book_id, review_text, rating):
+    conn = sqlite3.connect("Scriptoria.db")
+    cursor = conn.cursor()
+
+    #Insert review
+    cursor.execute('''
+            INSERT INTO userReviews (user_id, book_id, review_text, rating)
+            VALUES (?, ?, ?, ?)
+        ''', (user_id, book_id, review_text, rating))
+
+    #Update the average rating for the book
+    cursor.execute('''
+            INSERT INTO Books (book_id, title, author, description, page_count, cover_image, average_rating)
+            SELECT ?, '', '', '', 0, '', 0.0
+            WHERE NOT EXISTS (SELECT 1 FROM Books WHERE book_id = ?)
+        ''', (book_id, book_id))
+
+    cursor.execute('''
+            UPDATE Books
+            SET average_rating = (
+                SELECT AVG(rating) FROM userReviews WHERE book_id = ?
+            )
+            WHERE book_id = ?
+        ''', (book_id, book_id))
+
+    conn.commit()
+    conn.close()
+
 
 if __name__ == '__main__':
     app.run()

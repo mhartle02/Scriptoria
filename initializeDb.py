@@ -75,6 +75,21 @@ def initializeDb():
         END;
     ''')
 
+    #Making user's private list in MyBooks
+    cursor.execute("DROP TABLE IF EXISTS myBooks")
+    print("MyBooks Database Cleared")
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS myBooks (
+            book_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            author TEXT NOT NULL,
+            description TEXT,
+            page_count INTEGER,
+            cover_image TEXT,
+            average_rating REAL DEFAULT 0            
+            )
+    ''')
+
     #Later: Allow users to update reviews and delete reviews and create triggers to table like above ^
 
 

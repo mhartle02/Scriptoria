@@ -23,7 +23,7 @@
     color: black;
 }
 
-.profile, .signin, .signup, .logout {
+.profile, .signin, .signup, .logout, .review{
     float: right;
 }
 
@@ -119,4 +119,67 @@
     margin-left: 5px;
     font-size: 16px;
     color: black;
+}
+
+.container {
+    width: 60%;
+    margin: auto;
+    text-align: center;
+}
+
+.search-bar input {
+    width: 60%;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.book-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.book-list li {
+    margin: 15px 0;
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.book-cover {
+    height: 100px;
+    float: left;
+    margin-right: 15px;
+}
+
+textarea {
+    width: 100%;
+    height: 100px;
+    margin-top: 5px;
+}
+
+button {
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#reviewForm {
+    display: none;
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+}
+
+.dynamic-review-form {
+    margin-top: 10px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    width: 90%;
+    max-width: 500px;
 }

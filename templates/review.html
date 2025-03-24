@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Submit a Review</title>
+    <link href="../static/style.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+    <div class = "topnav">
+        {% if session['username']%}
+            <a href = "profile">My Books</a>
+            <a href = "bookclub">Book clubs</a>
+
+            <div class = profile><a href = "profile">Profile</a></div>
+            <div class = logout><a href="{{ url_for('logout') }}">Log Out</a></div>
+        {% endif %}
+    </div>
+
+    <div class = "background">
+        <div class="container">
+        <h1>Submit a Book Review</h1>
+
+        <form action="/review" method="GET" class="search-bar">
+            <input type="text" name="q" placeholder="Search for a book..." value="{{ query }}">
+            <button type="submit">Search</button>
+        </form>
+
+        <!-- search results -->
+        {% if books %}
+            <h2>Select a Book to Review</h2>
+            <ul class="book-list">
+                {% for book in books %}
+                <li>
+                    <img src="{{ book.cover_image }}" alt="Book Cover" class="book-cover">
+                    <h3>{{ book.title }}</h3>
+                    <p>By: {{ book.authors }}</p>
+                    <p>Google Book ID: {{ book.book_id }}</p>
+
+                    <form action="/review" method="POST">
+                        <input type="hidden" name="book_id" value="{{ book.book_id }}">
+                        <label for="review">Write your review:</label>
+                        <textarea name="review" required></textarea>
+                        <label for="rating">Rating (1-5 stars):</label>
+                        <select name="rating" required>
+                            <option value="1">★☆☆☆☆ (1)</option>
+                            <option value="2">★★☆☆☆ (2)</option>
+                            <option value="3">★★★☆☆ (3)</option>
+                            <option value="4">★★★★☆ (4)</option>
+                            <option value="5">★★★★★ (5)</option>
+                        </select>
+                        <button type="submit">Submit Review</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    </div>
+</body>
+</html>

@@ -46,6 +46,8 @@ def add_books_into_users_list(books):
 
 
     return
+
+
 def insert_books_into_db(books):
     #Insert books into db while screening for dupes
     conn = sqlite3.connect('Scriptoria.db')
@@ -117,7 +119,7 @@ def login():
                 #If we redirect based on the permission level of the user, we can handle it here
                 if session['permission'] == "Reader":
                     return redirect(url_for('reader'))
-                """"if session['permission'] == "Admin":
+                """if session['permission'] == "Admin":
                     return redirect(url_for('admin'))
                 if session['permission'] == "author":
                     return redirect(url_for('author'))"""
@@ -221,6 +223,61 @@ def reader():
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+@app.route("/review", methods=["GET", "POST"])
+def review():
+    if request.method == "POST":
+        book_id = request.form.get("book_id")
+        review_text = request.form.get("review")
+        rating = int(request.form.get("rating"))
+
+        #Inserting review into database and update average rating
+        insert_review(book_id, review_text, rating)
+
+        return redirect(url_for("review"))
+
+    query = request.args.get("q", "")
+    books = fetch_books(query)  #Fetching book from database
+    return render_template("review.html", books=books, query=query)
+
+def insert_review(book_id, review_text, rating):
+    conn = sqlite3.connect("Scriptoria.db")
+    cursor = conn.cursor()
+
+    # Ensure userReviews table exists
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS userReviews (
+                review_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                book_id TEXT NOT NULL,  -- Google Books API Volume ID
+                review_text TEXT NOT NULL,
+                rating INTEGER NOT NULL
+            )
+        ''')
+
+    # Insert review
+    cursor.execute('''
+            INSERT INTO userReviews (book_id, review_text, rating)
+            VALUES (?, ?, ?)
+        ''', (book_id, review_text, rating))
+
+    # Update the average rating for the book
+    cursor.execute('''
+            INSERT INTO Books (book_id, title, author, description, page_count, cover_image, average_rating)
+            SELECT ?, '', '', '', 0, '', 0.0
+            WHERE NOT EXISTS (SELECT 1 FROM Books WHERE book_id = ?)
+        ''', (book_id, book_id))
+
+    cursor.execute('''
+            UPDATE Books
+            SET average_rating = (
+                SELECT AVG(rating) FROM userReviews WHERE book_id = ?
+            )
+            WHERE book_id = ?
+        ''', (book_id, book_id))
+
+    conn.commit()
+    conn.close()
+
 
 if __name__ == '__main__':
     app.run()

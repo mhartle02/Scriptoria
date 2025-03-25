@@ -156,9 +156,13 @@ def signup():
             cursor.execute('''SELECT permission FROM userLogins WHERE username = ?''', (username,))
             newest_user = cursor.fetchone()
             permission = newest_user[0]
+            cursor.execute('''SELECT username FROM userLogins WHERE username = ?''', (username,))
+            newest_user2 = cursor.fetchone()
+            username = newest_user2[0]
 
             session['user_id'] = user_id
             session['permission'] = permission
+            session['username'] = username
             conn.close()
             if permission == "Reader":
                 flash("User created!", "success")

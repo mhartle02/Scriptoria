@@ -22,9 +22,9 @@ def fetch_books(query, max_results=5):
     for item in data.get('items', []):
         volume_info = item.get('volumeInfo', {})
 
+
         book = Book(
-        #The fields commented out below can be deleted, but could also be used as additional info for books
-            #book_id=volume_info.get('id', 'Unknown ID'),
+            google_book_id=volume_info.get('id', 'Unknown ID'),
             title=volume_info.get('title', 'Unknown Title'),
             authors=volume_info.get('authors', ['Unknown Author']),
             description=volume_info.get('description', 'No Description'),
@@ -44,35 +44,21 @@ def insert_books_into_db(books):
     conn = sqlite3.connect('Scriptoria.db')
     cursor = conn.cursor()
 
-    #testing if following code is necessary
-    """
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS booksTable (
-            book_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            author TEXT NOT NULL,
-            description TEXT,
-            page_count INTEGER,
-            cover_image TEXT            
-        )
-    ''')
-    """
-
     for book in books:
-        #CHeck that book isn't already in database
-        cursor.execute("SELECT book_id FROM Books WHERE title = ? AND author = ?", (book.title, book.authors))
-        existing_book = cursor.fetchone()
-
-        if existing_book is None:
+        try:
             cursor.execute('''
-                INSERT INTO Books (title, author, description, page_count, cover_image, average_rating)
-                VALUES (?, ?, ?, ?, ?, ?)    
-            ''', (book.title, book.authors, book.description, book.page_count, book.cover_image, book.average_rating))
+                   INSERT INTO Books (google_book_id, title, author, description, page_count, cover_image, average_rating)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(google_book_id) DO NOTHING
+               ''', (book.google_book_id, book.title, book.authors, book.description, book.page_count, book.cover_image,
+                     book.average_rating))
+        except sqlite3.IntegrityError as e:
+            print(f"Skipping duplicate book: {book.title} (Google ID: {book.google_book_id})")
 
-            #Debugging
-            print(f"Added book to database: {book.title}")
-            #Debugging pt2
-            print(f"Rating: {book.average_rating}")
+        #Debugging
+        print(f"Added book to database: {book.title}")
+        #Debugging pt2
+        print(f"Rating: {book.average_rating}")
 
     conn.commit()
     conn.close()
@@ -93,7 +79,7 @@ def login():
             conn = sqlite3.connect('Scriptoria.db')
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT name, username, password, permission
+                SELECT id, name, username, password, permission
                 FROM userLogins
                 WHERE username = ?
             """, (username,))
@@ -104,13 +90,16 @@ def login():
             print(f"Query Result: {user}")
 
             if user:
+                session["user_id"] = user[0]
+                session['username'] = user[2]
+                session['permission'] = user[4]
+                session['name'] = user[1]
 
-                session['username'] = user[1]
-                session['permission'] = user[3]
-                session['name'] = user[0]
+                print("Session Data: ", session)
                 #If we redirect based on the permission level of the user, we can handle it here
                 if session['permission'] == "Reader":
                     return redirect(url_for('reader'))
+
                 """if session['permission'] == "Admin":
                     return redirect(url_for('admin'))
                 if session['permission'] == "author":
@@ -214,8 +203,8 @@ def logout():
     session.clear()
     return redirect(url_for('home'))
 
-@app.route('/reader', methods = ['GET', 'POST'])
-def reader(): #title, author, description, page_count, cover_image, average_rating
+@app.route('/reader', methods=['GET', 'POST'])
+def reader():
     if request.method == 'POST':
         user_id = session['user_id']
         title = request.form.get('title')
@@ -225,9 +214,8 @@ def reader(): #title, author, description, page_count, cover_image, average_rati
         cover_image = request.form.get('cover_image')
         average_rating = request.form.get('average_rating')
 
-        #print({user_id})
-        print({title})
-        print({author})
+        print(f"Adding book: {title} by {author}")
+
         conn = sqlite3.connect('Scriptoria.db')
         cursor = conn.cursor()
 
@@ -236,17 +224,22 @@ def reader(): #title, author, description, page_count, cover_image, average_rati
 
         if existing_book is None:
             cursor.execute('''
-                    INSERT INTO myBooks (user_id, title, author, description, page_count, cover_image, average_rating)
-                    VALUES (?,?, ?, ?, ?, ?, ?)
-                ''', (user_id, title, author, description, page_count, cover_image, average_rating))
+                INSERT INTO myBooks (user_id, title, author, description, page_count, cover_image, average_rating)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (user_id, title, author, description, page_count, cover_image, average_rating))
             conn.commit()
             flash("Book added to your reading list!", "success")
         else:
             flash("Book already in your list.", "warning")
+
         conn.close()
         return redirect(url_for('reader'))
-    books = fetch_books(query="GET")
-    return render_template('reader.html', books=books)
+
+    #Call fetch_books to handle book search
+    query = request.args.get("q", "")
+    books = fetch_books(query) if query else []  #Only fetch books if a query is provided to prevent results showing up when loading in
+
+    return render_template('reader.html', books=books, query=query)
 
 @app.route('/my_books', methods=['GET','POST'])
 def my_books():
@@ -268,50 +261,81 @@ def my_books():
             "average_rating": book[6]
         })
     return render_template('my_books.html', books = book_list)
+
 @app.route("/review", methods=["GET", "POST"])
 def review():
+    if "user_id" not in session:
+        flash("You must be logged in to submit a review.", "error")
+        return redirect(url_for("login"))
+
     if request.method == "POST":
         user_id = session['user_id']
-        book_id = request.form.get("book_id")
+        google_book_id = request.form.get("book_id")  # Changed to google_book_id
         review_text = request.form.get("review")
-        rating = int(request.form.get("rating"))
+        rating = request.form.get("rating")
 
-        #Inserting review into database and update average rating
-        insert_review(user_id, book_id, review_text, rating)
+        if not google_book_id or not review_text or not rating:
+            print("Error: Missing form data!")
+            flash("Error: Missing required fields.", "error")
+            return redirect(url_for("review"))
 
-        return redirect(url_for("review"))
+        try:
+            rating = int(rating)  # Ensure rating is a valid integer
+        except ValueError:
+            print("Error: Invalid rating input!")
+            flash("Error: Invalid rating value.", "error")
+            return redirect(url_for("review"))
 
-    query = request.args.get("q", "")
-    books = fetch_books(query)  #Fetching book from database
-    return render_template("review.html", books=books, query=query)
+        conn = sqlite3.connect("Scriptoria.db")
+        cursor = conn.cursor()
 
-def insert_review(user_id, book_id, review_text, rating):
-    conn = sqlite3.connect("Scriptoria.db")
-    cursor = conn.cursor()
+        # Find book_id from google_book_id
+        cursor.execute("SELECT book_id FROM Books WHERE google_book_id = ?", (google_book_id,))
+        book_entry = cursor.fetchone()
 
-    #Insert review
-    cursor.execute('''
-            INSERT INTO userReviews (user_id, book_id, review_text, rating)
-            VALUES (?, ?, ?, ?)
-        ''', (user_id, book_id, review_text, rating))
+        if book_entry:
+            book_id = book_entry[0]
+            print(f"Book found in database: book_id={book_id}")
+        else:
+            print(f"Error: Book not found in database for google_book_id={google_book_id}")
+            flash("Error: Book not found in database.", "error")
+            conn.close()
+            return redirect(url_for("review"))
 
-    #Update the average rating for the book
-    cursor.execute('''
-            INSERT INTO Books (book_id, title, author, description, page_count, cover_image, average_rating)
-            SELECT ?, '', '', '', 0, '', 0.0
-            WHERE NOT EXISTS (SELECT 1 FROM Books WHERE book_id = ?)
-        ''', (book_id, book_id))
+        # Insert review
+        try:
+            cursor.execute('''
+                INSERT INTO userReviews (user_id, book_id, review_text, rating)
+                VALUES (?, ?, ?, ?)
+            ''', (user_id, book_id, review_text, rating))
+            print(f"Review successfully inserted: user_id={user_id}, book_id={book_id}, rating={rating}")
 
-    cursor.execute('''
+        except sqlite3.IntegrityError as e:
+            print(f"SQLite Integrity Error: {e}")
+            flash("Error submitting review. Please try again.", "error")
+            conn.close()
+            return redirect(url_for("review"))
+
+        # Update average rating
+        cursor.execute('''
             UPDATE Books
-            SET average_rating = (
-                SELECT AVG(rating) FROM userReviews WHERE book_id = ?
-            )
+            SET average_rating = (SELECT AVG(rating) FROM userReviews WHERE book_id = ?)
             WHERE book_id = ?
         ''', (book_id, book_id))
 
-    conn.commit()
-    conn.close()
+        print(f"Average rating updated for book_id={book_id}")
+
+        conn.commit()
+        conn.close()
+
+        flash("Review submitted successfully!", "success")
+        return redirect(url_for("review"))
+
+    query = request.args.get("q", "")
+    books = fetch_books(query)  # Fetching books from database
+    return render_template("review.html", books=books, query=query)
+
+
 
 
 if __name__ == '__main__':

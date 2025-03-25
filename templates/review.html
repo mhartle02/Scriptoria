@@ -6,21 +6,35 @@
     <link href="../static/style.css" type="text/css" rel="stylesheet" />
     <script>
         function showReviewForm(bookId, title, buttonElement) {
-            console.log("Opening Review for: ",title);  //Debugging
+            console.log("Opening Review for: ",title);      //Debugging
+            console.log("Setting book_id: ", bookId);       //Also Debugging
+
+            //Checking that bookId is correctly set
+            if(!bookId || bookId === "undefined") {
+                console.error("Error: bookId is invalid!", bookId);
+                return;  //Stop if bookId is missing
+            }
+
+            //Remove existing review form
             let existingForm = document.querySelector(".dynamic-review-form");
             if (existingForm) {
                 existingForm.remove();
             }
 
+            //Use original hidden review form
             let reviewForm = document.getElementById("reviewForm").cloneNode(true);
-            reviewForm.style.display = "block"; //Show review form
-            reviewForm.classList.add("dynamic-review-form"); //Assigning the dynamic class to enable removal
+            reviewForm.style.display = "block";     //Show review form
+            reviewForm.classList.add("dynamic-review-form");    //Assigning the dynamic class to enable removal
             reviewForm.querySelector("#selectedBookTitle").innerText = title;
             reviewForm.querySelector("#book_id").value = bookId;
 
             //Find selected book's associated container
             let bookItem = buttonElement.closest("li");
-            bookItem.appendChild(reviewForm);
+            if (bookItem) {
+                bookItem.appendChild(reviewForm);
+            } else {
+                console.error("Error: Could not find book item container.");
+            }
         }
     </script>
 </head>
@@ -58,7 +72,7 @@
                     <h3>{{ book.title }}</h3>
                     <p>By: {{ book.authors }}</p>
                     <p>{{ book.description }}</p>
-                    <button onclick="showReviewForm('{{ book.book_id }}', '{{ book.title }}', this)">Make a Review</button>
+                    <button onclick="showReviewForm('{{ book.google_book_id }}', '{{ book.title }}', this)">Make a Review</button>
                 </li>
                 {% endfor %}
             </ul>

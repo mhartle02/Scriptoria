@@ -54,6 +54,7 @@ def initializeDb():
     cursor.execute('''
             CREATE TABLE IF NOT EXISTS Books (
             book_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            google_book_id TEXT UNIQUE,
             title TEXT NOT NULL,
             author TEXT NOT NULL,
             description TEXT,

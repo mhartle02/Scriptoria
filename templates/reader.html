@@ -67,7 +67,7 @@
                     </div>
 
                     <div class="add">
-                        <form action="{{ url_for('reader') }}" method="POST">
+                        <form action="/reader" method="POST">
                             <input type="hidden" name="title" value="{{ book.title }}">
                             <input type="hidden" name="author" value="{{ book.authors }}">
                             <input type="hidden" name="description" value="{{ book.description }}">
@@ -75,13 +75,6 @@
                             <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
                             <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
                             <button type="submit">Add to My Books</button>
-                                {% with messages = get_flashed_messages(with_categories=true) %}
-                                {% if messages %}
-                                {% for category, message in messages %}
-                                    <div class="flash-message {{ category }}">{{ message }}</div>
-                                {% endfor %}
-                            {% endif %}
-                        {% endwith %}
                         </form>
                     </div>
                 </li>

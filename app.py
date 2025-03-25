@@ -153,9 +153,22 @@ def signup():
             cursor.execute('''SELECT id FROM userLogins WHERE username = ?''', (username,))
             new_user = cursor.fetchone()
             user_id = new_user[0]
+            cursor.execute('''SELECT permission FROM userLogins WHERE username = ?''', (username,))
+            newest_user = cursor.fetchone()
+            permission = newest_user[0]
+
             session['user_id'] = user_id
+            session['permission'] = permission
             conn.close()
-            flash("User created!", "success")
+            if permission == "Reader":
+                flash("User created!", "success")
+                return redirect(url_for('reader'))
+            elif permission == "Author":
+                flash("User created!", "success")
+                return redirect(url_for('author'))
+            elif permission == "Admin":
+                flash("User created!", "success")
+                return redirect(url_for('admin'))
             return redirect(url_for('home'))
             # temporary, will change depending on the role/permission one have
 

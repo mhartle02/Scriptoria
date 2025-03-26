@@ -99,14 +99,10 @@ def login():
                 #If we redirect based on the permission level of the user, we can handle it here
                 if session['permission'] == "Reader":
                     return redirect(url_for('reader'))
-
-                """if session['permission'] == "Admin":
+                elif session['permission'] == "Author":
+                    return redirect(url_for('author'))
+                elif session['permission'] == "Admin":
                     return redirect(url_for('admin'))
-                if session['permission'] == "author":
-                    return redirect(url_for('author'))"""
-
-
-                #This is temporary until we decide how to utilize user permissions
                 return render_template('home.html')
 
             else:
@@ -174,7 +170,6 @@ def signup():
                 flash("User created!", "success")
                 return redirect(url_for('admin'))
             return redirect(url_for('home'))
-            # temporary, will change depending on the role/permission one have
 
     return render_template('signup.html', msg="User successfully created!", errors=[], show_form=False)
 
@@ -287,7 +282,7 @@ def review():
 
     if request.method == "POST":
         user_id = session['user_id']
-        google_book_id = request.form.get("book_id")  # Changed to google_book_id
+        google_book_id = request.form.get("book_id")  #Changed to google_book_id
         review_text = request.form.get("review")
         rating = request.form.get("rating")
 
@@ -297,7 +292,7 @@ def review():
             return redirect(url_for("review"))
 
         try:
-            rating = int(rating)  # Ensure rating is a valid integer
+            rating = int(rating)  #Ensure rating is a valid integer
         except ValueError:
             print("Error: Invalid rating input!")
             flash("Error: Invalid rating value.", "error")
@@ -306,7 +301,7 @@ def review():
         conn = sqlite3.connect("Scriptoria.db")
         cursor = conn.cursor()
 
-        # Find book_id from google_book_id
+        #Find book_id from google_book_id
         cursor.execute("SELECT book_id FROM Books WHERE google_book_id = ?", (google_book_id,))
         book_entry = cursor.fetchone()
 
@@ -319,7 +314,7 @@ def review():
             conn.close()
             return redirect(url_for("review"))
 
-        # Insert review
+        #Insert review
         try:
             cursor.execute('''
                 INSERT INTO userReviews (user_id, book_id, review_text, rating)
@@ -333,7 +328,7 @@ def review():
             conn.close()
             return redirect(url_for("review"))
 
-        # Update average rating
+        #Update average rating
         cursor.execute('''
             UPDATE Books
             SET average_rating = (SELECT AVG(rating) FROM userReviews WHERE book_id = ?)
@@ -349,7 +344,7 @@ def review():
         return redirect(url_for("review"))
 
     query = request.args.get("q", "")
-    books = fetch_books(query)  # Fetching books from database
+    books = fetch_books(query)  #Fetching books from database
     return render_template("review.html", books=books, query=query)
 
 

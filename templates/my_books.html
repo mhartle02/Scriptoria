@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Scriptoria Home</title>
+    <title>Book List</title>
     <link href="../static/style.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
@@ -30,13 +30,6 @@
     </div>
 
     <div class='background'>
-        <h1>Welcome {{ session['name']}}! This is your book list</h1>
-        <form action="/my_books" method='GET' class="search-bar">
-            <input type="text" placeholder="Search a book..." name="q" value="{{ query }}">
-            <button type="submit"><img src="../images/search.png"></button>
-        </form>
-
-        <!-- This is all temporary and ideally can be replaced with a results page OR expanded upon to include reviews -->
         {% if books %}
         <div class="book-results">
             <h2>Search Results</h2>
@@ -81,6 +74,9 @@
                 {% endfor %}
             </ul>
         </div>
+        {% else %}
+            <h2>This is where your book list would be</h2>
+            <h3>Return <a href="reader">home</a> to add books to your list!</h3>
         {% endif %}
     </div>
 

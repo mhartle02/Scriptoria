@@ -63,9 +63,55 @@ def insert_books_into_db(books):
     conn.commit()
     conn.close()
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
 def home():
-    return render_template('home.html')
+    try:
+        user_id = session['user_id']
+        name = session['name']
+    except KeyError:
+        name = ""
+        user_id = ""
+    print(user_id)
+    #name = session['name']
+    if request.method == 'POST':
+        try:
+            title = request.form.get('title')
+            author = request.form.get('author')
+            description = request.form.get('description')
+            page_count = request.form.get('page_count')
+            cover_image = request.form.get('cover_image')
+            average_rating = request.form.get('average_rating')
+
+
+        except Exception as e:
+            return redirect(url_for('login'))
+
+        print(f"Adding book: {title} by {author}")
+
+        conn = sqlite3.connect('Scriptoria.db')
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT book_id FROM myBooks WHERE title = ? AND author = ?", (title, author))
+        existing_book = cursor.fetchone()
+
+        if existing_book is None:
+            cursor.execute('''
+                INSERT INTO myBooks (user_id, title, author, description, page_count, cover_image, average_rating)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (user_id, title, author, description, page_count, cover_image, average_rating))
+            conn.commit()
+            flash("Book added to your reading list!", "success")
+        else:
+            flash("Book already in your list.", "warning")
+
+        conn.close()
+        return redirect(url_for('home'))
+
+    #Call fetch_books to handle book search
+    query = request.args.get("q", "")
+    books = fetch_books(query) if query else []  #Only fetch books if a query is provided to prevent results showing up when loading in
+
+    return render_template('home.html', books=books, query=query)
 
 @app.route('/login', methods =['GET', 'POST'])
 def login():
@@ -98,12 +144,12 @@ def login():
                 print("Session Data: ", session)
                 #If we redirect based on the permission level of the user, we can handle it here
                 if session['permission'] == "Reader":
-                    return redirect(url_for('reader'))
+                    return redirect(url_for('home'))
                 elif session['permission'] == "Author":
                     return redirect(url_for('author'))
                 elif session['permission'] == "Admin":
                     return redirect(url_for('admin'))
-                return render_template('home.html')
+                return render_template('home')
 
             else:
                 flash("Invalid username or password", 'danger')
@@ -156,13 +202,15 @@ def signup():
             newest_user2 = cursor.fetchone()
             username = newest_user2[0]
 
-            session['user_id'] = user_id
-            session['permission'] = permission
-            session['username'] = username
+            session["user_id"] = user[0]
+            session['name'] = user[1]
+            session['username'] = user[2]
+            session['permission'] = user[4]
+
             conn.close()
             if permission == "Reader":
                 flash("User created!", "success")
-                return redirect(url_for('reader'))
+                return redirect(url_for('home'))
             elif permission == "Author":
                 flash("User created!", "success")
                 return redirect(url_for('author'))
@@ -214,44 +262,6 @@ def reset():
 def logout():
     session.clear()
     return redirect(url_for('home'))
-
-@app.route('/reader', methods=['GET', 'POST'])
-def reader():
-    if request.method == 'POST':
-        user_id = session['user_id']
-        title = request.form.get('title')
-        author = request.form.get('author')
-        description = request.form.get('description')
-        page_count = request.form.get('page_count')
-        cover_image = request.form.get('cover_image')
-        average_rating = request.form.get('average_rating')
-
-        print(f"Adding book: {title} by {author}")
-
-        conn = sqlite3.connect('Scriptoria.db')
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT book_id FROM myBooks WHERE title = ? AND author = ?", (title, author))
-        existing_book = cursor.fetchone()
-
-        if existing_book is None:
-            cursor.execute('''
-                INSERT INTO myBooks (user_id, title, author, description, page_count, cover_image, average_rating)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (user_id, title, author, description, page_count, cover_image, average_rating))
-            conn.commit()
-            flash("Book added to your reading list!", "success")
-        else:
-            flash("Book already in your list.", "warning")
-
-        conn.close()
-        return redirect(url_for('reader'))
-
-    #Call fetch_books to handle book search
-    query = request.args.get("q", "")
-    books = fetch_books(query) if query else []  #Only fetch books if a query is provided to prevent results showing up when loading in
-
-    return render_template('reader.html', books=books, query=query)
 
 @app.route('/my_books', methods=['GET','POST'])
 def my_books():
@@ -351,4 +361,4 @@ def review():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug = True)

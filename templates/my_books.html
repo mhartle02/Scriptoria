@@ -9,7 +9,7 @@
 
     <div class = "topnav">
         {% if session['username']%}
-            <a href = "reader">Home</a>
+            <a href = "/">Home</a>
             <a href = "my_books">My Books</a>
             <a href = "bookclub">Book clubs</a>
             <div class = profile><a href = "profile">Profile</a></div>
@@ -76,7 +76,7 @@
         </div>
         {% else %}
             <h2>This is where your book list would be</h2>
-            <h3>Return <a href="reader">home</a> to add books to your list!</h3>
+            <h3>Return <a href="">home</a> to add books to your list!</h3>
         {% endif %}
     </div>
 

@@ -46,7 +46,7 @@
     width: 100%;
     min-height: 100vh;
     padding: 3%;
-    background-image: linear-gradient(rgba(255,99,71,0.5), rgba(255,99,71,0.5)), url(../images/parchment-home-background.jpg);
+    background-image: linear-gradient(rgba(255,99,71,0.5), rgba(255,99,71,0.5)), url(images/parchment-home-background.jpg);
     background-position: center;
     background-size: cover;
 }

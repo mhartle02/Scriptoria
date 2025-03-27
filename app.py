@@ -64,7 +64,7 @@ def insert_books_into_db(books):
     conn.close()
 
 @app.route('/', methods=['GET', 'POST'])
-def reader():
+def home():
     try:
         user_id = session['user_id']
         name = session['name']
@@ -105,13 +105,13 @@ def reader():
             flash("Book already in your list.", "warning")
 
         conn.close()
-        return redirect(url_for('reader'))
+        return redirect(url_for('home'))
 
     #Call fetch_books to handle book search
     query = request.args.get("q", "")
     books = fetch_books(query) if query else []  #Only fetch books if a query is provided to prevent results showing up when loading in
 
-    return render_template('reader.html', books=books, query=query)
+    return render_template('home.html', books=books, query=query)
 
 @app.route('/login', methods =['GET', 'POST'])
 def login():
@@ -144,12 +144,12 @@ def login():
                 print("Session Data: ", session)
                 #If we redirect based on the permission level of the user, we can handle it here
                 if session['permission'] == "Reader":
-                    return redirect(url_for('reader'))
+                    return redirect(url_for('home'))
                 elif session['permission'] == "Author":
                     return redirect(url_for('author'))
                 elif session['permission'] == "Admin":
                     return redirect(url_for('admin'))
-                return render_template('reader')
+                return render_template('home')
 
             else:
                 flash("Invalid username or password", 'danger')
@@ -210,14 +210,14 @@ def signup():
             conn.close()
             if permission == "Reader":
                 flash("User created!", "success")
-                return redirect(url_for('reader'))
+                return redirect(url_for('home'))
             elif permission == "Author":
                 flash("User created!", "success")
                 return redirect(url_for('author'))
             elif permission == "Admin":
                 flash("User created!", "success")
                 return redirect(url_for('admin'))
-            return redirect(url_for('reader'))
+            return redirect(url_for('home'))
 
     return render_template('signup.html', msg="User successfully created!", errors=[], show_form=False)
 
@@ -261,7 +261,7 @@ def reset():
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('reader'))
+    return redirect(url_for('home'))
 
 @app.route('/my_books', methods=['GET','POST'])
 def my_books():

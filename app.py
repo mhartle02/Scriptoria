@@ -49,7 +49,9 @@ def insert_books_into_db(books):
             cursor.execute('''
                    INSERT INTO Books (google_book_id, title, author, description, page_count, cover_image, average_rating)
                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                   ON CONFLICT(google_book_id) DO NOTHING
+                   ON CONFLICT(google_book_id) DO UPDATE
+                   SET title = excluded.title, author = excluded.author, description = excluded.description, page_count = excluded.page_count, cover_image = excluded.cover_image, 
+                   average_rating = excluded.average_rating
                ''', (book.google_book_id, book.title, book.authors, book.description, book.page_count, book.cover_image,
                      book.average_rating))
         except sqlite3.IntegrityError as e:
@@ -68,12 +70,12 @@ def home():
     try:
         user_id = session['user_id']
         name = session['name']
+        permission  = session['permission']
     except KeyError:
         name = ""
         user_id = ""
     print(user_id)
-    #name = session['name']
-    if request.method == 'POST':
+    if request.method == 'POST' and permission == "Reader":
         try:
             title = request.form.get('title')
             author = request.form.get('author')
@@ -106,6 +108,24 @@ def home():
 
         conn.close()
         return redirect(url_for('home'))
+    elif request.method == 'POST' and permission == "Admin":
+        try:
+            title = request.form.get('title')
+            author = request.form.get('author')
+            google_book_id = request.form.get('google_book_id')
+        except Exception as e:
+                return redirect(url_for('login'))
+
+        print(f"Google book id: {google_book_id}")
+        print(f"Adding book: {title} by {author}")
+
+        conn = sqlite3.connect('Scriptoria.db')
+        cursor = conn.cursor()
+        cursor.execute('''DELETE FROM Books WHERE google_book_id = ?''', (google_book_id,))
+        print(f"Book successfully deleted!", "success")
+        flash("Book successfully deleted!", "success")
+        conn.commit()
+        conn.close()
 
     #Call fetch_books to handle book search
     query = request.args.get("q", "")
@@ -148,7 +168,7 @@ def login():
                 elif session['permission'] == "Author":
                     return redirect(url_for('author'))
                 elif session['permission'] == "Admin":
-                    return redirect(url_for('admin'))
+                    return redirect(url_for('home'))
                 return render_template('home')
 
             else:
@@ -202,21 +222,16 @@ def signup():
             newest_user2 = cursor.fetchone()
             username = newest_user2[0]
 
-            session["user_id"] = user[0]
-            session['name'] = user[1]
-            session['username'] = user[2]
-            session['permission'] = user[4]
-
             conn.close()
             if permission == "Reader":
                 flash("User created!", "success")
                 return redirect(url_for('home'))
             elif permission == "Author":
                 flash("User created!", "success")
-                return redirect(url_for('author'))
+                return redirect(url_for('home'))
             elif permission == "Admin":
                 flash("User created!", "success")
-                return redirect(url_for('admin'))
+                return redirect(url_for('home'))
             return redirect(url_for('home'))
 
     return render_template('signup.html', msg="User successfully created!", errors=[], show_form=False)
@@ -272,10 +287,6 @@ def my_books():
     cursor.execute('''SELECT book_id, title, author, description, page_count, cover_image, average_rating FROM myBooks where user_id = ?''',
                    (user_id,))
     books = cursor.fetchall()
-    for i in range(len(books)):
-        book_id = books[i][0]
-    cursor.execute('''SELECT title FROM myBooks where user_id = ? AND book_id = ?''', (user_id,book_id,))
-    print(f"Book title: {title}")
     conn.close()
     book_list = []
     for book in books:

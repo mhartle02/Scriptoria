@@ -10,7 +10,7 @@
     <div class = "topnav">
         <a class = "active" href = "">Home</a>
 
-        {% if session['username']%}
+        {% if session['username'] and session['permission'] == "Reader" %}
             <a href = "my_books">My Books</a>
             <a href = "bookclub">Book clubs</a>
             <div class = profile><a href = "profile">Profile</a></div>
@@ -69,13 +69,24 @@
 
                     <div class="add">
                         <form action="/" method="POST">
-                                <input type="hidden" name="title" value="{{ book.title }}">
-                                <input type="hidden" name="author" value="{{ book.authors }}">
-                                <input type="hidden" name="description" value="{{ book.description }}">
-                                <input type="hidden" name="page_count" value="{{ book.page_count }}">
-                                <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
-                                <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
-                                <button type="submit">Add to My Books</button>
+                                {% if session['permission'] == "Reader" %}
+                                    <input type="hidden" name="title" value="{{ book.title }}">
+                                    <input type="hidden" name="author" value="{{ book.authors }}">
+                                    <input type="hidden" name="description" value="{{ book.description }}">
+                                    <input type="hidden" name="page_count" value="{{ book.page_count }}">
+                                    <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
+                                    <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
+                                    <button type="submit">Add to My Books</button>
+                                {% endif %}
+                                {% if session['permission'] == "Admin" %}
+                                    <input type="hidden" name="title" value="{{ book.title }}">
+                                    <input type="hidden" name="author" value="{{ book.authors }}">
+                                    <input type="hidden" name="description" value="{{ book.description }}">
+                                    <input type="hidden" name="page_count" value="{{ book.page_count }}">
+                                    <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
+                                    <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
+                                    <button type="submit">Delete Book from List</button>
+                                {% endif %}
                         </form>
                     </div>
                 </li>

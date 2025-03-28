@@ -1,17 +1,22 @@
+
+.button {
+    background-color: #FE4F2D;
+}
+
 .active {
-    background-color: black;
+    background-color: #FE4F2D;
     color: white;
 }
 
 .topnav {
-    background-color: grey;
+    background-color: #57B4BA;
     overflow: hidden;
 }
 
 .topnav a {
     float: left;
     display: block;
-    color: #f2f2f2;
+    color: white;
     text-align: center;
     padding: 14px 16px;
     text-decoration: none;
@@ -32,8 +37,8 @@
     left: 0px;
     bottom: 0px;
     width: 100%;
-    background-color: #deaf83;
-    color: #f2f2f2;
+    background-color: #57B4BA;
+    color: #015551;
 }
 
 .footersignin, .footersignup, .footerlogout {
@@ -46,9 +51,9 @@
     width: 100%;
     min-height: 100vh;
     padding: 3%;
-    background-image: linear-gradient(rgba(255,99,71,0.5), rgba(255,99,71,0.5)), url(../images/parchment-home-background.jpg);
     background-position: center;
     background-size: cover;
+    background-color: #FDFBEE;
 }
 
 .search-bar{
@@ -61,6 +66,7 @@
     border-radius: 60px;
     padding: 10px 20px;
     backdrop-filter: blur(4px) saturate(180%);
+    background-color: #57B4BA;
 }
 
 .search-bar input{

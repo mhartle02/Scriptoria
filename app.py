@@ -10,6 +10,7 @@ app.secret_key = 'Secret Key'
 #conn = sqlite3.connect('Scriptoria.db')
 #cursor = conn.cursor()
 
+#Adding a comment for a change to commit
 app.secret_key = "keys" #needed to change the password
 
 def fetch_books(query, max_results=5):

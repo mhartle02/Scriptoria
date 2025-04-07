@@ -280,14 +280,33 @@ def logout():
 
 @app.route('/my_books', methods=['GET','POST'])
 def my_books():
+    if "user_id" not in session:
+        flash("You must be logged in to view your books.", "error")
+        return redirect(url_for("login"))
+
     user_id = session['user_id']
     print(user_id)
     conn = sqlite3.connect('Scriptoria.db')
     cursor = conn.cursor()
-    cursor.execute('''SELECT book_id, title, author, description, page_count, cover_image, average_rating FROM myBooks where user_id = ?''',
-                   (user_id,))
+
+    if request.method == "POST":
+        book_id = request.form.get("book_id")
+        if book_id:
+            #Deleting this book from user's list
+            cursor.execute(
+                '''DELETE FROM myBooks WHERE book_id = ? AND user_id = ?''', (book_id, user_id)
+            )
+            conn.commit()
+            flash("Book removed from your list!", "success")
+        else:
+            flash("Invalid book ID.", "error")
+
+    cursor.execute(
+        '''SELECT book_id, title, author, description, page_count, cover_image, average_rating FROM myBooks where user_id = ?''',(user_id,)
+    )
     books = cursor.fetchall()
     conn.close()
+
     book_list = []
     for book in books:
         book_list.append({
@@ -299,52 +318,10 @@ def my_books():
             "cover_image": book[5],
             "average_rating": book[6]
         })
+
         print(f"Book title: {book[1]}")
-        """if request.method == "POST":
-            conn = sqlite3.connect('Scriptoria.db')
-            cursor = conn.cursor()
-            cursor.execute(
-                '''SELECT book_id FROM myBooks where user_id = ?''',
-                (user_id,))
-            book_id_tuple = cursor.fetchone()
-            book_id = book_id_tuple[0]
-            print(f"Book_id: {book_id}")
-            print(f"The book list: {book_list}")
-            if book_id:
-                book_list = [book for book in book_list if str(book['book_id']) != book_id]
-            print(f"The book list: {book_list}")"""
     return render_template('my_books.html', books = book_list)
 
-"""@app.route('/delete_books', methods=['GET','POST'])
-def delete_books():
-        user_id = session['user_id']
-        conn = sqlite3.connect('Scriptoria.db')
-        cursor = conn.cursor()
-        cursor.execute(
-            '''SELECT book_id, title, author, description, page_count, cover_image, average_rating FROM myBooks where user_id = ?''',
-            (user_id,))
-        books = cursor.fetchall()
-        for i in range(len(books)):
-            book_id = books[i][0]
-        cursor.execute('''DELETE FROM myBooks where user_id = ? AND book_id = ?''', (user_id, book_id,))
-        conn.commit()
-        cursor.execute('''SELECT book_id, title, author, description, page_count, cover_image, average_rating
-                          FROM myBooks WHERE user_id = ?''', (user_id,))
-        books = cursor.fetchall()
-        conn.close()
-
-        book_list = []
-        for book in books:
-            book_list.append({
-                "book_id": book[0],
-                "title": book[1],
-                "author": book[2],
-                "description": book[3],
-                "page_count": book[4],
-                "cover_image": book[5],
-                "average_rating": book[6]
-            })
-        return render_template('my_books.html', books = book_list)"""
 
 @app.route("/review", methods=["GET", "POST"])
 def review():

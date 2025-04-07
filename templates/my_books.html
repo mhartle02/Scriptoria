@@ -68,10 +68,10 @@
                             <input type="hidden" name="page_count" value="{{ book.page_count }}">
                             <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
                             <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
-                            <form action="{{ url_for('my_books') }}" method="POST">
+                        </form>
+                        <form action="{{ url_for('my_books') }}" method="POST">
                                 <input type="hidden" name="book_id" value="{{ book.book_id }}">
-                                    <button type="submit">Remove book from list</button>
-                            </form>
+                                <button type="submit">Remove book from list</button>
                         </form>
                     </div>
                 </li>
@@ -80,7 +80,7 @@
         </div>
         {% else %}
             <h2>This is where your book list would be</h2>
-            <h3>Return <a href="">home</a> to add books to your list!</h3>
+            <h3>Return <a href="/">home</a> to add books to your list!</h3>
         {% endif %}
     </div>
 

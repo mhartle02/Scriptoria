@@ -11,13 +11,16 @@ def initializeDb():
         name TEXT NOT NULL,
         username TEXT NOT NULL,
         password TEXT NOT NULL,
-        permission TEXT NOT NULL
+        permission TEXT NOT NULL,
+        pronouns TEXT,
+        bio TEXT,
+        profile_picture TEXT
         )
     ''')
 
     #Temporary, for debugging
     exampleUsers = [
-        {"name": "John", "username": "reader", "password": "1000", "permission": "Reader"},
+        {"name": "John", "username": "reader", "password": "1000", "permission": "Reader", "pronouns": "he/him", "bio": "Example Bio", "profile_picture" : "example_profile_picture_link"},
         {"name": "John", "username": "admin", "password": "1234", "permission": "Admin"},
         {"name": "John", "username": "author", "password": "2345", "permission": "Author"}
     ]

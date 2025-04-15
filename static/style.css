@@ -47,14 +47,25 @@
     font-size: 17px;
 }
 
-.background{
+.background {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 30px;
+    background-color: #FDFBEE;
+}
+
+/*.background{
     width: 100%;
     min-height: 100vh;
-    padding: 3%;
+    padding: 30px;
+    align-items: center;
     background-position: center;
     background-size: cover;
     background-color: #FDFBEE;
-}
+}*/
 
 .search-bar{
     display: flex;
@@ -190,3 +201,62 @@ button {
     max-width: 500px;
 }
 
+.profile {
+    width: 90%;
+    max-width: 600px;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 20px
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.profile h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.profile p,
+.profile label {
+    font-size: 16px;
+    margin: 10px 0;
+    color: #333;
+}
+
+.profile input[type="text"],
+.profile textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.profile button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.profile button:hover {
+    background-color: #006f99;
+}
+
+.topnav div a {
+    padding: 14px 16px;
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+}
+
+.nav-profile {
+    display: inline-block;
+}

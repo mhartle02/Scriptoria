@@ -260,3 +260,13 @@ button {
 .nav-profile {
     display: inline-block;
 }
+
+#toggle-edit {
+    margin-top: 10px;
+    background-color: #e06d65;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 6px;
+}

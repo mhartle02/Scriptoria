@@ -74,7 +74,9 @@ def initializeDb():
         BEGIN
             UPDATE Books
             SET average_rating = (
-                SELECT AVG(rating) FROM userReviews WHERE book_id = NEW.book_id
+                SELECT ROUND(AVG(rating), 2)
+                FROM userReviews
+                WHERE book_id = NEW.book_id
             )
             WHERE book_id = NEW.book_id;
         END;

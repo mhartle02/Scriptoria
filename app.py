@@ -21,8 +21,6 @@ def fetch_books(query, max_results=5):
     books = []
     for item in data.get('items', []):
         volume_info = item.get('volumeInfo', {})
-
-
         book = Book(
             google_book_id=volume_info.get('id', 'Unknown ID'),
             title=volume_info.get('title', 'Unknown Title'),
@@ -30,7 +28,7 @@ def fetch_books(query, max_results=5):
             description=volume_info.get('description', 'No Description'),
             page_count=volume_info.get('pageCount', 0),
             cover_image=volume_info.get('imageLinks', {}).get('thumbnail', ''),
-            average_rating=volume_info.get('averageRating', 0.0)  #Default 'extracted' rating to 0.0
+            average_rating=0
 
         )
         books.append(book)
@@ -47,20 +45,18 @@ def insert_books_into_db(books):
     for book in books:
         try:
             cursor.execute('''
-                   INSERT INTO Books (google_book_id, title, author, description, page_count, cover_image, average_rating)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)
-                   ON CONFLICT(google_book_id) DO UPDATE
-                   SET title = excluded.title, author = excluded.author, description = excluded.description, page_count = excluded.page_count, cover_image = excluded.cover_image, 
-                   average_rating = excluded.average_rating
-               ''', (book.google_book_id, book.title, book.authors, book.description, book.page_count, book.cover_image,
-                     book.average_rating))
-        except sqlite3.IntegrityError as e:
-            print(f"Skipping duplicate book: {book.title} (Google ID: {book.google_book_id})")
+                   INSERT OR IGNORE INTO Books 
+                (google_book_id, title, author, description, page_count, cover_image, average_rating)
+                VALUES (?, ?, ?, ?, ?, ?, COALESCE(?,0))
+            ''', (book.google_book_id, book.title, book.authors, book.description, book.page_count, book.cover_image, book.average_rating))
 
-        #Debugging
-        print(f"Added book to database: {book.title}")
-        #Debugging pt2
-        print(f"Rating: {book.average_rating}")
+            if cursor.rowcount>0:
+                print(f"Added book to database: {book.title}")
+            else:
+                print(f"Skipped duplicate book: {book.title}")
+
+        except sqlite3.Error as e:
+            print(f"Skipping duplicate book: {book.title}")
 
     conn.commit()
     conn.close()
@@ -438,13 +434,6 @@ def review():
             flash("Error submitting review. Please try again.", "error")
             conn.close()
             return redirect(url_for("review"))
-
-        #Update average rating
-        cursor.execute('''
-            UPDATE Books
-            SET average_rating = (SELECT AVG(rating) FROM userReviews WHERE book_id = ?)
-            WHERE book_id = ?
-        ''', (book_id, book_id))
 
         print(f"Average rating updated for book_id={book_id}")
 

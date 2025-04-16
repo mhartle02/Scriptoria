@@ -22,14 +22,14 @@ def fetch_books(query, max_results=5):
     for item in data.get('items', []):
         volume_info = item.get('volumeInfo', {})
         book = Book(
-            google_book_id=volume_info.get('id', 'Unknown ID'),
+            google_book_id=item.get('id', 'Unknown ID'),
             title=volume_info.get('title', 'Unknown Title'),
             authors=volume_info.get('authors', ['Unknown Author']),
+            #authors=', '.join(volume_info.get('authors', ['Unknown Author'])),   #Commented out bc doesn't work but might be needed later (with tweaking)
             description=volume_info.get('description', 'No Description'),
             page_count=volume_info.get('pageCount', 0),
             cover_image=volume_info.get('imageLinks', {}).get('thumbnail', ''),
             average_rating=0
-
         )
         books.append(book)
     #Inserting fetched books into book database
@@ -45,10 +45,18 @@ def insert_books_into_db(books):
     for book in books:
         try:
             cursor.execute('''
-                   INSERT OR IGNORE INTO Books 
+                INSERT OR IGNORE INTO Books 
                 (google_book_id, title, author, description, page_count, cover_image, average_rating)
                 VALUES (?, ?, ?, ?, ?, ?, COALESCE(?,0))
-            ''', (book.google_book_id, book.title, book.authors, book.description, book.page_count, book.cover_image, book.average_rating))
+            ''', (
+                book.google_book_id,
+                book.title,
+                book.authors,
+                book.description,
+                book.page_count,
+                book.cover_image,
+                book.average_rating
+            ))
 
             if cursor.rowcount>0:
                 print(f"Added book to database: {book.title}")
@@ -70,7 +78,13 @@ def home():
     except KeyError:
         name = ""
         user_id = ""
+        permission = ""
     print(user_id)
+
+    conn = sqlite3.connect('Scriptoria.db')
+    cursor = conn.cursor()
+
+    #Handling POST for Readers
     if request.method == 'POST' and permission == "Reader":
         try:
             title = request.form.get('title')
@@ -79,15 +93,10 @@ def home():
             page_count = request.form.get('page_count')
             cover_image = request.form.get('cover_image')
             average_rating = request.form.get('average_rating')
-
-
         except Exception as e:
             return redirect(url_for('login'))
 
         print(f"Adding book: {title} by {author}")
-
-        conn = sqlite3.connect('Scriptoria.db')
-        cursor = conn.cursor()
 
         cursor.execute("SELECT book_id FROM myBooks WHERE title = ? AND author = ?", (title, author))
         existing_book = cursor.fetchone()
@@ -96,14 +105,15 @@ def home():
             cursor.execute('''
                 INSERT INTO myBooks (user_id, title, author, description, page_count, cover_image, average_rating)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (user_id, title, author, description, page_count, cover_image, average_rating))
+                ''', (user_id, title, author, description, page_count, cover_image, average_rating))
             conn.commit()
             flash("Book added to your reading list!", "success")
         else:
             flash("Book already in your list.", "warning")
-
-        conn.close()
+        #conn.close()
         return redirect(url_for('home'))
+
+    #Handling POST for Admins
     elif request.method == 'POST' and permission == "Admin":
         try:
             title = request.form.get('title')
@@ -112,21 +122,41 @@ def home():
         except Exception as e:
                 return redirect(url_for('login'))
 
-        print(f"Google book id: {google_book_id}")
-        print(f"Adding book: {title} by {author}")
-
-        conn = sqlite3.connect('Scriptoria.db')
-        cursor = conn.cursor()
-        cursor.execute('''DELETE FROM Books WHERE google_book_id = ?''', (google_book_id,))
-        print(f"Book successfully deleted!", "success")
-        flash("Book successfully deleted!", "success")
+        '''
+        print(f"Deleting book: {title} by {author}")
+        cursor.execute('DELETE FROM Books WHERE google_book_id = ?', (google_book_id,))
         conn.commit()
-        conn.close()
+        flash("Book successfully deleted!", "success")
+        '''
 
-    #Call fetch_books to handle book search
+
     query = request.args.get("q", "")
-    books = fetch_books(query) if query else []  #Only fetch books if a query is provided to prevent results showing up when loading in
+    books = []
+    if query:
+        #Now searching local database before querying GoogleBooksAPI
+        cursor.execute('''
+            SELECT * FROM Books
+            WHERE title LIKE ? OR author LIKE ?
+        ''', (f"%{query}%", f"%{query}%"))
+        book_rows = cursor.fetchall()
 
+        if book_rows:
+            for row in book_rows:
+                books.append({
+                    'book_id' : row[0],
+                    'google_book_id' : row[1],
+                    'title' : row[2],
+                    'authors' : row[3],
+                    'description' : row[4],
+                    'page_count' : row[5],
+                    'cover_image' : row[6],
+                    'average_rating' : round(row[7], 2) if row[7] is not None else 0.0
+                })
+        else:
+            #If not found in local DB, query GoogleBooksAPI
+            books = fetch_books(query)
+
+    conn.close()
     return render_template('home.html', books=books, query=query)
 
 @app.route('/login', methods =['GET', 'POST'])

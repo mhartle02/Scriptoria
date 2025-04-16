@@ -147,8 +147,8 @@ def login():
             cursor.execute("""
                 SELECT id, name, username, password, permission
                 FROM userLogins
-                WHERE username = ?
-            """, (username,))
+                WHERE username = ? AND password = ?
+            """, (username,password,))
             user = cursor.fetchone()
             conn.close()
 
@@ -173,6 +173,7 @@ def login():
 
             else:
                 flash("Invalid username or password", 'danger')
+                return render_template('login.html')
         except Exception as e:
             #Logging Error for debugging
             print(f"Error During login: {e}")

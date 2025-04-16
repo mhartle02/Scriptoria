@@ -147,8 +147,8 @@ def login():
             cursor.execute("""
                 SELECT id, name, username, password, permission
                 FROM userLogins
-                WHERE username = ?
-            """, (username,))
+                WHERE username = ? AND password = ?
+            """, (username,password,))
             user = cursor.fetchone()
             conn.close()
 
@@ -173,6 +173,7 @@ def login():
 
             else:
                 flash("Invalid username or password", 'danger')
+                return render_template('login.html')
         except Exception as e:
             #Logging Error for debugging
             print(f"Error During login: {e}")
@@ -354,6 +355,34 @@ def my_books():
              })
          return render_template('my_books.html', books = book_list)"""
 
+@app.route('/profile', methods=["GET", "POST"])
+def profile():
+    if "user_id" not in session:
+        flash("Please log in to view your profile.", "error")
+        print("User must log in <--- Debugging")
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    conn = sqlite3.connect("Scriptoria.db")
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+        pronouns = request.form.get("pronouns")
+        bio = request.form.get("bio")
+
+        cursor.execute('''
+            UPDATE userLogins
+            SET pronouns = ?, bio = ?
+            WHERE id = ?
+        ''', (pronouns, bio, user_id))
+        conn.commit()
+        flash("Profile updated successfully!", "success")
+
+    cursor.execute("SELECT username, name, pronouns, bio FROM userLogins where id = ?", (user_id,))
+    user = cursor.fetchone()
+    conn.close()
+
+    return render_template("profile.html", user=user)
 
 
 @app.route("/review", methods=["GET", "POST"])

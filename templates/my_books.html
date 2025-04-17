@@ -12,7 +12,8 @@
             <a href = "/">Home</a>
             <a href = "my_books">My Books</a>
             <a href = "bookclub">Book clubs</a>
-            <div class = nav-profile><a href = "profile">Profile</a></div>
+            <a href = "my_reviews">My Reviews</a>
+            <a href = "profile">Profile</a>
             <div class = review><a href = "review">Make a Review</a></div>
             <div class = logout><a href="{{ url_for('logout') }}">Log Out</a></div>
         {% else %}
@@ -24,8 +25,8 @@
         {% if session['username']%}
             <div class = footerlogout><a href="{{ url_for('logout') }}">Log Out</a></div>
         {% else %}
-        <div class = footersignup><a href = "signup">Sign Up</a></div>
-        <div class = footersignin><a href="login">Log in</a></div>
+            <div class = footersignup><a href = "signup">Sign Up</a></div>
+            <div class = footersignin><a href="login">Log in</a></div>
         {% endif %}
     </div>
 

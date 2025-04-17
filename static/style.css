@@ -270,3 +270,18 @@ button {
     cursor: pointer;
     border-radius: 6px;
 }
+
+.review-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.review-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}

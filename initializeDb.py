@@ -39,18 +39,22 @@ def initializeDb():
     #conn.close()
 
     #Making reviews database
-    cursor.execute("DROP TABLE IF EXISTS userReviews")
+    cursor.execute("DROP TABLE IF EXISTS Reviews")
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS userReviews (
-        review_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        book_id INTEGER NOT NULL,
-        review_text TEXT NOT NULL,
-        rating INTEGER CHECK(rating BETWEEN 1 and 5),
-        FOREIGN KEY (user_id) REFERENCES userLogins(id) ON DELETE CASCADE,
-        FOREIGN KEY (book_id) REFERENCES Books(book_id) ON DELETE CASCADE
+        CREATE TABLE IF NOT EXISTS Reviews (
+            review_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            book_id INTEGER NOT NULL,
+            review_text TEXT NOT NULL,
+            rating INTEGER CHECK(rating BETWEEN 1 and 5),
+            date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES userLogins(id) ON DELETE CASCADE,
+            FOREIGN KEY (book_id) REFERENCES Books(book_id) ON DELETE CASCADE
         )
     ''')
+            #UNIQUE(user_id, book_id),
+    #Add above line ^ to the table if we want to eventually prevent dupe reviews
+    #Right now, for testing, I'm leaving this out -Bryce
 
     cursor.execute("DROP TABLE IF EXISTS Books")
     print("Books Database Cleared")
@@ -69,13 +73,13 @@ def initializeDb():
 
     cursor.execute('''
         CREATE TRIGGER IF NOT EXISTS update_book_rating
-        AFTER INSERT ON userReviews
+        AFTER INSERT ON Reviews
         FOR EACH ROW
         BEGIN
             UPDATE Books
             SET average_rating = (
                 SELECT ROUND(AVG(rating), 2)
-                FROM userReviews
+                FROM Reviews
                 WHERE book_id = NEW.book_id
             )
             WHERE book_id = NEW.book_id;

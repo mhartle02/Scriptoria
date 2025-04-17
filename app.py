@@ -349,6 +349,33 @@ def my_books():
         print(f"Book title: {book[1]}")
     return render_template('my_books.html', books = book_list)
 
+@app.route('/my_reviews', methods=['GET', 'POST'])
+def my_reviews():
+    if "user_id" not in session:
+        flash("You must be logged in to view your reviews.", "error")
+        return redirect(url_for("login"))
+
+    user_id = session['user_id']
+    conn = sqlite3.connect('Scriptoria.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT Reviews.review_text, Reviews.rating, Reviews.date_created,
+               Books.title, Books.author, Books.cover_image
+        FROM Reviews
+        JOIN Books ON Reviews.book_id = Books.book_id
+        WHERE Reviews.user_id = ?
+        ORDER BY Reviews.date_created DESC
+    ''', (user_id,))
+
+    reviews = cursor.fetchall()
+    conn.close()
+    return render_template('my_reviews.html', reviews=reviews)
+
+
+
+
 
 """@app.route('/delete_books', methods=['GET','POST'])
  def delete_books():
@@ -454,7 +481,7 @@ def review():
         #Insert review
         try:
             cursor.execute('''
-                INSERT INTO userReviews (user_id, book_id, review_text, rating)
+                INSERT INTO Reviews (user_id, book_id, review_text, rating)
                 VALUES (?, ?, ?, ?)
             ''', (user_id, book_id, review_text, rating))
             print(f"Review successfully inserted: user_id={user_id}, book_id={book_id}, rating={rating}")

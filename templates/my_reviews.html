@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reviewed Books</title>
+    <link href="../static/style.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+    <div class = "topnav">
+        {% if session['username']%}
+            <a href = "/">Home</a>
+            <a href = "my_books">My Books</a>
+            <a href = "bookclub">Book clubs</a>
+            <div class = nav-profile><a href = "profile">Profile</a></div>
+            <div class = review><a href = "review">Make a Review</a></div>
+            <div class = logout><a href="{{ url_for('logout') }}">Log Out</a></div>
+        {% else %}
+            <div class = signup><a href = "signup">Sign Up</a></div>
+            <div class = signin><a href="login">Log in</a> </div>
+        {% endif %}
+    </div>
+
+    <div class='background'>
+        <h1>My Reviews</h1>
+        {% if reviews %}
+            <ul class="review-list">
+                {% for review in reviews %}
+                    <li class="review-card">
+                        <img src="{{ review.cover_image }}" alt="Book Cover" style="height:100px;">
+                        <div>
+                            <h3>{{ review.title }}</h3>
+                            <p>by {{ review.author }}</p>
+                            <p><strong>My Rating:</strong>
+                                {% for i in range(review.rating) %}
+                                    <span class="star full">★</span>
+                                {% endfor %}
+                                {% for i in range(5 - review.rating) %}
+                                    <span class="star empty">☆</span>
+                                {% endfor %}
+                                ({{ review.rating }}/5)
+                            </p>
+                            <p><strong>My Review:</strong> {{ review.review_text }}</p>
+                            <p><em>Reviewed on: {{ review.date_created }}</em></p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>You haven’t written any reviews yet!</p>
+        {% endif %}
+    </div>
+
+    <div class = "footernav">
+        {% if session['username']%}
+            <div class = footerlogout><a href="{{ url_for('logout') }}">Log Out</a></div>
+        {% endif %}
+    </div>
+
+
+</body>
+</html>

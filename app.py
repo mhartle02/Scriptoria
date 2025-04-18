@@ -2,6 +2,11 @@ from flask import *
 import sqlite3, requests
 from werkzeug.security import generate_password_hash, check_password_hash
 from classes.book import *
+import os
+from PIL import Image
+import secrets
+
+
 
 app = Flask(__name__)
 app.secret_key = 'Secret Key'
@@ -422,21 +427,43 @@ def profile():
     if request.method == "POST":
         pronouns = request.form.get("pronouns")
         bio = request.form.get("bio")
+        profile_picture = request.files.get("profile_picture")
 
-        cursor.execute('''
-            UPDATE userLogins
-            SET pronouns = ?, bio = ?
-            WHERE id = ?
-        ''', (pronouns, bio, user_id))
+        if profile_picture and profile_picture.filename != "":
+            # Generate random filename
+            random_hex = secrets.token_hex(8)
+            _, f_ext = os.path.splitext(profile_picture.filename)
+            picture_fn = random_hex + f_ext
+            picture_path = os.path.join('static/profile_pics', picture_fn)
+
+            # Resize and save
+            img = Image.open(profile_picture)
+            img.thumbnail((200, 200))
+            img.save(picture_path)
+
+            # Update with image, pronouns & bio
+            cursor.execute('''
+                UPDATE userLogins
+                SET pronouns = ?, bio = ?, profile_picture = ?
+                WHERE id = ?
+            ''', (pronouns, bio, picture_fn, user_id))
+        else:
+            # Update only pronouns & bio
+            cursor.execute('''
+                UPDATE userLogins
+                SET pronouns = ?, bio = ?
+                WHERE id = ?
+            ''', (pronouns, bio, user_id))
+
         conn.commit()
         flash("Profile updated successfully!", "success")
 
-    cursor.execute("SELECT username, name, pronouns, bio FROM userLogins where id = ?", (user_id,))
+    # Fetch current user data including profile_picture for display
+    cursor.execute("SELECT username, name, pronouns, bio, profile_picture FROM userLogins WHERE id = ?", (user_id,))
     user = cursor.fetchone()
     conn.close()
 
     return render_template("profile.html", user=user)
-
 
 @app.route("/review", methods=["GET", "POST"])
 def review():
@@ -505,6 +532,19 @@ def review():
     return render_template("review.html", books=books, query=query)
 
 
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+
+    # Optional: Resize image before saving
+    output_size = (200, 200)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+
+    return picture_fn
 
 
 if __name__ == '__main__':

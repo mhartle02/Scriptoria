@@ -7,14 +7,14 @@ def initializeDb():
     cursor.execute("DROP TABLE IF EXISTS userLogins")
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS userLogins (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        username TEXT NOT NULL,
-        password TEXT NOT NULL,
-        permission TEXT NOT NULL,
-        pronouns TEXT,
-        bio TEXT,
-        profile_picture TEXT
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            username TEXT NOT NULL,
+            password TEXT NOT NULL,
+            permission TEXT NOT NULL,
+            pronouns TEXT,
+            bio TEXT,
+            profile_picture TEXT DEFAULT 'default.jpg'
         )
     ''')
 

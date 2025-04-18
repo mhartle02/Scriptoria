@@ -6,32 +6,40 @@
     <link href="../static/style.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
-    <div class = "topnav">
-        {% if session['username']%}
-            <a href = "/">Home</a>
-            <a href = "my_books">My Books</a>
-            <a href = "bookclub">Book clubs</a>
+    <div class="topnav">
+        {% if session.get('username') %}
+            <a href="/">Home</a>
+            <a href="my_books">My Books</a>
+            <a href="bookclub">Book clubs</a>
             <a href="my_reviews">My Reviews</a>
-
-            <div class = "nav-profile"><a href = "profile">Profile</a></div>
-            <div class = "review"><a href = "review">Make a Review</a></div>
-            <div class = "logout"><a href="{{ url_for('logout') }}">Log Out</a></div>
+            <div class="nav-profile"><a href="profile">Profile</a></div>
+            <div class="review"><a href="review">Make a Review</a></div>
+            <div class="logout"><a href="{{ url_for('logout') }}">Log Out</a></div>
         {% endif %}
     </div>
-    <div class = "background">
-        <h2>My Profile</h2>
-        <div class = "profile">
-            <p><strong>Username: </strong> {{ user[0] }}</p>
-            <p><strong>Name: </strong> {{ user[1] }}</p>
 
-            <!-- Default static fields -->
+    <div class="background">
+        <h2>My Profile</h2>
+        <div class="profile">
+
+            <!-- Profile Picture Display -->
+            <img src="{{ url_for('static', filename='profile_pics/' + (user[4] or 'default.jpg')) }}" alt="Profile Picture" width="150" style="border-radius: 10px;">
+
+            <p><strong>Username:</strong> {{ user[0] }}</p>
+            <p><strong>Name:</strong> {{ user[1] }}</p>
+
+            <!-- Static View -->
             <div id="static-profile">
-                <p><strong>Pronouns: </strong> <span id="display-pronouns">{{ user[2] or '' }}</span></p>
-                <p><strong>Bio: </strong> <span id="display-bio">{{ user[3] or '' }}</span></p>
+                <p><strong>Pronouns:</strong> <span id="display-pronouns">{{ user[2] or '' }}</span></p>
+                <p><strong>Bio:</strong> <span id="display-bio">{{ user[3] or '' }}</span></p>
             </div>
 
-            <!-- Editing form -->
-            <form id="edit-form" action="{{ url_for('profile') }}" method="POST" style="display: none;">
+            <!-- Editing Form -->
+            <form id="edit-form" action="{{ url_for('profile') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+
+                <label for="profile_picture">Change Profile Picture:</label><br>
+                <input type="file" name="profile_picture" id="profile_picture"><br><br>
+
                 <label for="pronouns">Pronouns:</label><br>
                 <input type="text" name="pronouns" id="pronouns" value="{{ user[2] or '' }}"><br><br>
 
@@ -40,27 +48,23 @@
 
                 <button type="submit">Update Profile</button>
             </form>
+
             <button type="button" id="toggle-edit">Edit Profile</button>
         </div>
     </div>
-<script>
-    const toggleBtn = document.getElementById("toggle-edit");
-    const staticView = document.getElementById("static-profile");
-    const editForm = document.getElementById("edit-form");
 
-    toggleBtn.addEventListener("click", () => {
-        const isEditing = editForm.style.display==="block";
-        if (isEditing) {
-            editForm.style.display = "none";
-            staticView.style.display = "block";
-            toggleBtn.textContent = "Edit Profile";
-        } else {
-            editForm.style.display = "block";
-            staticView.style.display = "none";
-            toggleBtn.textContent = "Cancel";
-        }
-    });
-</script>
+    <script>
+        const toggleBtn = document.getElementById("toggle-edit");
+        const staticView = document.getElementById("static-profile");
+        const editForm = document.getElementById("edit-form");
+
+        toggleBtn.addEventListener("click", () => {
+            const isEditing = editForm.style.display === "block";
+            editForm.style.display = isEditing ? "none" : "block";
+            staticView.style.display = isEditing ? "block" : "none";
+            toggleBtn.textContent = isEditing ? "Edit Profile" : "Cancel";
+        });
+    </script>
 
 </body>
 </html>

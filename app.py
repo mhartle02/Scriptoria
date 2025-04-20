@@ -415,7 +415,10 @@ def profile():
         print("User must log in <--- Debugging")
         return redirect(url_for("login"))
 
-    user_id = session["user_id"]
+    #This is different from all other session variable instances, I'm unsure if this will cause issues
+    user_id = int(session["user_id"])
+    #Debugging Print(s)
+    print(f"Current session user ID: {session['user_id']}")
     conn = sqlite3.connect("Scriptoria.db")
     cursor = conn.cursor()
 
@@ -433,9 +436,25 @@ def profile():
 
     cursor.execute("SELECT username, name, pronouns, bio FROM userLogins where id = ?", (user_id,))
     user = cursor.fetchone()
+
+    #Fetching friends for display on profile page
+    cursor.execute('''
+        SELECT u.name, u.username
+        FROM userFriends f
+        JOIN userLogins u ON f.friend_id = u.id
+        WHERE f.user_id = ?
+    ''', (user_id,))
+    friends = cursor.fetchall()
+
+    #Debugging print(s) again
+    print(f"Fetched friends: {friends}")
+    print("Current session user ID:", user_id)
+    cursor.execute("SELECT * FROM userFriends")
+    print("All userFriends rows:", cursor.fetchall())
+
     conn.close()
 
-    return render_template("profile.html", user=user)
+    return render_template("profile.html", user=user, friends=friends)
 
 
 @app.route("/review", methods=["GET", "POST"])

@@ -165,27 +165,29 @@ def login():
         return render_template('login.html')
     if request.method == 'POST':
         username = request.form.get('username')
-        password = request.form.get('password')
+        password = session['password']
 
+        print(f"This is the username: {password}")
         try:
             conn = sqlite3.connect('Scriptoria.db')
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT id, name, username, password, permission
+                SELECT id, name, permission, pronouns, bio, profile_picture
                 FROM userLogins
                 WHERE username = ? AND password = ?
             """, (username,password,))
             user = cursor.fetchone()
             conn.close()
-
             #Debugging
-            print(f"Query Result: {user}")
+            print(f"Query Result: {user}")  # the problem is somewhere here, even when moved to before the close statement it doesn't work
 
             if user:
                 session["user_id"] = user[0]
-                session['username'] = user[2]
-                session['permission'] = user[4]
                 session['name'] = user[1]
+                session['permission'] = user[2]
+
+                print(f"Permission: {session['permission']}")
+
 
                 print("Session Data: ", session)
                 #If we redirect based on the permission level of the user, we can handle it here
@@ -204,6 +206,7 @@ def login():
             #Logging Error for debugging
             print(f"Error During login: {e}")
             flash("An Error Occurred. Please Try Again.", 'danger')
+
             return render_template('login.html')
 
 
@@ -217,6 +220,11 @@ def signup():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         permission = request.form.get('permission')
+
+        print(f"This is your name: {name}")
+        print(f"This is your username: {username}")
+        print(f"This is your password: {password}")
+        print(f"This is your permission: {permission}")
 
     #Add error checking to be flashed on website if new fields are needed
         errors=[]
@@ -242,12 +250,20 @@ def signup():
             cursor.execute('''SELECT id FROM userLogins WHERE username = ?''', (username,))
             new_user = cursor.fetchone()
             user_id = new_user[0]
+            print(f"The user's id is: {user_id}")
             cursor.execute('''SELECT permission FROM userLogins WHERE username = ?''', (username,))
             newest_user = cursor.fetchone()
             permission = newest_user[0]
+            cursor.execute('''SELECT password FROM userLogins WHERE username = ?''', (username,))
+            newest_user = cursor.fetchone()
+            session['password'] = newest_user[0]
             cursor.execute('''SELECT username FROM userLogins WHERE username = ?''', (username,))
             newest_user2 = cursor.fetchone()
             username = newest_user2[0]
+            cursor.execute('''SELECT pronouns FROM userLogins WHERE username = ?''', (username,))
+            newest_user3 = cursor.fetchone()
+            pronouns = newest_user3[0]
+            print(f"The user's pronouns is: {pronouns}")
 
             conn.close()
             if permission == "Reader":

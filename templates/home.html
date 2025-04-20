@@ -3,43 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>Scriptoria Home</title>
-    <link href="../static/style.css" type="text/css" rel="stylesheet" />
+    <link href="../static/style.css" type="text/css" rel="stylesheet">
 </head>
 <body>
 
-    <div class = "topnav">
-        <a class = "active" href = "">Home</a>
+    <div class="topnav">
+        <a class="active" href="">Home</a>
 
         {% if session['username'] and session['permission'] == "Reader" %}
-            <a href = "my_books">My Books</a>
-            <a href = "bookclub">Book clubs</a>
-            <div class = nav-profile><a href = "profile">Profile</a></div>
-            <div class = review><a href = "review">Make a Review</a></div>
-            <div class = logout><a href="{{ url_for('logout') }}">Log Out</a></div>
+            <a href="my_books">My Books</a>
+            <a href="bookclub">Book clubs</a>
+            <div class="nav-profile"><a href="profile">Profile</a></div>
+            <div class="review"><a href="review">Make a Review</a></div>
+            <div class="logout"><a href="{{ url_for('logout') }}">Log Out</a></div>
             <a href="my_reviews">My Reviews</a>
-
         {% else %}
-            <div class = signup><a href = "signup">Sign Up</a></div>
-            <div class = signin><a href="login">Log in</a> </div>
-        {% endif %}
-    </div>
-    <div class = "footernav">
-        {% if session['username']%}
-            <div class = footerlogout><a href="{{ url_for('logout') }}">Log Out</a></div>
-        {% else %}
-        <div class = footersignup><a href = "signup">Sign Up</a></div>
-        <div class = footersignin><a href="login">Log in</a></div>
+            <div class="signup"><a href="signup">Sign Up</a></div>
+            <div class="signin"><a href="login">Log in</a></div>
         {% endif %}
     </div>
 
-    <div class='background'>
-        <h1>Welcome {{ session['name']}}!</h1>
-        <form action="/" method='GET' class="search-bar">
+    <div class="footernav">
+        {% if session['username'] %}
+            <div class="footerlogout"><a href="{{ url_for('logout') }}">Log Out</a></div>
+        {% else %}
+            <div class="footersignup"><a href="signup">Sign Up</a></div>
+            <div class="footersignin"><a href="login">Log in</a></div>
+        {% endif %}
+    </div>
+
+    <div class="background">
+        <h1>Welcome {{ session['name'] }}!</h1>
+
+        <form action="/" method="GET" class="search-bar">
             <input type="text" placeholder="Search a book..." name="q" value="{{ query }}">
-            <button type="submit"><img src="static/images/search.png"></button>
+            <button type="submit"><img src="static/images/search.png" alt="Search"></button>
         </form>
 
-        <!-- This is all temporary and ideally can be replaced with a results page OR expanded upon to include reviews -->
         {% if books %}
         <div class="book-results">
             <h2>Search Results</h2>
@@ -66,29 +66,29 @@
                         {% for _ in range(empty_stars) %}
                             <span class="star empty">☆</span>
                         {% endfor %}
+
                         <span class="rating-text">({{ "%.1f"|format(book.average_rating) }})</span>
                     </div>
 
                     <div class="add">
                         <form action="/" method="POST">
-                                {% if session['permission'] == "Reader" %}
-                                    <input type="hidden" name="title" value="{{ book.title }}">
-                                    <input type="hidden" name="author" value="{{ book.authors }}">
-                                    <input type="hidden" name="description" value="{{ book.description }}">
-                                    <input type="hidden" name="page_count" value="{{ book.page_count }}">
-                                    <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
-                                    <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
-                                    <button type="submit">Add to My Books</button>
-                                {% endif %}
-                                {% if session['permission'] == "Admin" %}
-                                    <input type="hidden" name="title" value="{{ book.title }}">
-                                    <input type="hidden" name="author" value="{{ book.authors }}">
-                                    <input type="hidden" name="description" value="{{ book.description }}">
-                                    <input type="hidden" name="page_count" value="{{ book.page_count }}">
-                                    <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
-                                    <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
-                                    <button type="submit">Delete Book from List</button>
-                                {% endif %}
+                            {% if session['permission'] == "Reader" %}
+                                <input type="hidden" name="title" value="{{ book.title }}">
+                                <input type="hidden" name="author" value="{{ book.authors }}">
+                                <input type="hidden" name="description" value="{{ book.description }}">
+                                <input type="hidden" name="page_count" value="{{ book.page_count }}">
+                                <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
+                                <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
+                                <button type="submit">Add to My Books</button>
+                            {% elif session['permission'] == "Admin" %}
+                                <input type="hidden" name="title" value="{{ book.title }}">
+                                <input type="hidden" name="author" value="{{ book.authors }}">
+                                <input type="hidden" name="description" value="{{ book.description }}">
+                                <input type="hidden" name="page_count" value="{{ book.page_count }}">
+                                <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
+                                <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
+                                <button type="submit">Delete Book from List</button>
+                            {% endif %}
                         </form>
                     </div>
                 </li>

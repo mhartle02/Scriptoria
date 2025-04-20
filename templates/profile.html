@@ -41,6 +41,20 @@
                 <button type="submit">Update Profile</button>
             </form>
             <button type="button" id="toggle-edit">Edit Profile</button>
+
+            <!-- Friends List -->
+            <div class="friends-section">
+                <h2>Your Friends</h2>
+                {% if friends %}
+                    <ul>
+                        {% for friend in friends %}
+                            <li>{{ friend[0] }} ({{ friend[1] }})</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>You haven't added any friends yet.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 <script>

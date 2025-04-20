@@ -268,3 +268,30 @@ textarea {
     margin-top: 5px;
     width: 100%;
 }
+
+.friends-section {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f2f2f2;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.friends-section h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.friends-section ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.friends-section li {
+    margin: 8px 0;
+    padding: 8px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+

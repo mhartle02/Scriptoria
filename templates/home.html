@@ -91,6 +91,21 @@
                             {% endif %}
                         </form>
                     </div>
+                    <!-- Block for displaying reviews-->
+                    {% if book.reviews %}
+                        <div class="book-reviews">
+                            <h4>User Reviews:</h4>
+                            <ul>
+                                {% for review in book.reviews %}
+                                    <li><strong>{{ review.reviewer }}</strong>: "{{ review.text }}" (Rating: {{ review.rating }})</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% else %}
+                        <div class = "book-reviews">
+                            <p>No reviews yet for this book.</p>
+                        </div>
+                    {% endif %}
                 </li>
                 {% endfor %}
             </ul>

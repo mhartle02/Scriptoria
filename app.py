@@ -71,6 +71,8 @@ def insert_books_into_db(books):
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
+    reviews = {}
+    books = []
     try:
         user_id = session['user_id']
         name = session['name']
@@ -122,12 +124,6 @@ def home():
         except Exception as e:
                 return redirect(url_for('login'))
 
-        '''
-        print(f"Deleting book: {title} by {author}")
-        cursor.execute('DELETE FROM Books WHERE google_book_id = ?', (google_book_id,))
-        conn.commit()
-        flash("Book successfully deleted!", "success")
-        '''
 
 
     query = request.args.get("q", "")
@@ -142,6 +138,21 @@ def home():
 
         if book_rows:
             for row in book_rows:
+                book_id = row[0]
+                #Fetch user reviews for book
+                cursor.execute('''
+                                SELECT userLogins.name, Reviews.review_text, Reviews.rating
+                                FROM Reviews
+                                JOIN userLogins ON Reviews.user_id = userLogins.id
+                                WHERE Reviews.book_id = ?
+                            ''', (book_id,))
+                review_rows = cursor.fetchall()
+                #Formatting reviews into list of dictionaries
+                book_reviews = [
+                    {"reviewer": r[0], "text": r[1], "rating": r[2]}
+                    for r in review_rows
+                ]
+
                 books.append({
                     'book_id' : row[0],
                     'google_book_id' : row[1],
@@ -150,7 +161,8 @@ def home():
                     'description' : row[4],
                     'page_count' : row[5],
                     'cover_image' : row[6],
-                    'average_rating' : round(row[7], 2) if row[7] is not None else 0.0
+                    'average_rating' : round(row[7], 2) if row[7] is not None else 0.0,
+                    'reviews':book_reviews
                 })
         else:
             #If not found in local DB, query GoogleBooksAPI
@@ -188,7 +200,7 @@ def login():
                 session['permission'] = user[2]
 
 
-                print("Session Data: ", session)
+                print("Session Data: ", dict(session))
                 #If we redirect based on the permission level of the user, we can handle it here
                 if session['permission'] == "Reader":
                     return redirect(url_for('home'))

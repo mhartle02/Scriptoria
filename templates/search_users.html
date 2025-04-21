@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Users</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+      <div class = "topnav">
+          {% if session['username']%}
+              <a href = "/">Home</a>
+              <a href = "my_books">My Books</a>
+              <a href = "bookclub">Book clubs</a>
+              <a href="my_reviews">My Reviews</a>
+              <div class = "nav-profile"><a href = "profile">Profile</a></div>
+              <div class = "review"><a href = "review">Make a Review</a></div>
+              <div class = "logout"><a href="{{ url_for('logout') }}">Log Out</a></div>
+          {% endif %}
+      </div>
+      <div class = "background">
+       <h1>Search for Users</h1>
+
+        <form action="{{ url_for('search_users') }}" method="GET" class="search-bar">
+            <input type="text" name="q" placeholder="Search by name or username" value="{{ query }}">
+            <button type="submit">Search</button>
+        </form>
+
+        {% if users %}
+            <h2>Results:</h2>
+            <ul class="user-results">
+                {% for user in users %}
+                    <li>
+                        <strong>{{ user[1] }}</strong> ({{ user[2] }})
+                        <!-- Add button to send friend request here, when I get to it-->
+                    </li>
+                {% endfor %}
+            </ul>
+        {% elif query %}
+            <p>No users found matching "{{ query }}".</p>
+        {% endif %}
+      </div>
+</body>
+</html>

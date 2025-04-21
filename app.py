@@ -388,41 +388,6 @@ def my_reviews():
     conn.close()
     return render_template('my_reviews.html', reviews=reviews)
 
-
-
-
-
-"""@app.route('/delete_books', methods=['GET','POST'])
- def delete_books():
-         user_id = session['user_id']
-         conn = sqlite3.connect('Scriptoria.db')
-         cursor = conn.cursor()
-         cursor.execute(
-             '''SELECT book_id, title, author, description, page_count, cover_image, average_rating FROM myBooks where user_id = ?''',
-             (user_id,))
-         books = cursor.fetchall()
-         for i in range(len(books)):
-             book_id = books[i][0]
-         cursor.execute('''DELETE FROM myBooks where user_id = ? AND book_id = ?''', (user_id, book_id,))
-         conn.commit()
-         cursor.execute('''SELECT book_id, title, author, description, page_count, cover_image, average_rating
-                           FROM myBooks WHERE user_id = ?''', (user_id,))
-         books = cursor.fetchall()
-         conn.close()
-
-         book_list = []
-         for book in books:
-             book_list.append({
-                 "book_id": book[0],
-                 "title": book[1],
-                 "author": book[2],
-                 "description": book[3],
-                 "page_count": book[4],
-                 "cover_image": book[5],
-                 "average_rating": book[6]
-             })
-         return render_template('my_books.html', books = book_list)"""
-
 @app.route('/profile', methods=["GET", "POST"])
 def profile():
     if "user_id" not in session:
@@ -538,7 +503,7 @@ def review():
     books = fetch_books(query)  #Fetching books from database
     return render_template("review.html", books=books, query=query)
 
-@app.route('/search_users', methods=['GET'])
+@app.route('/search_users', methods=['GET', 'POST'])
 def search_users():
     try:
         query = request.args.get('q', '').strip()
@@ -552,9 +517,19 @@ def search_users():
                 WHERE username LIKE ? OR name LIKE ?
             """, (f"%{query}%", f"%{query}%"))
             users = cursor.fetchall()
+            print(f"List of users: {users}")
         else:
             users = []
-
+        if request.method == "POST":
+            user_id = session.get('user_id')
+            friend_id = request.form.get('friend_id')
+            if user_id == friend_id:
+                flash("You can't add yourself", "warnings")
+            else:
+                cursor.execute('''INSERT INTO userFriends (user_id, friend_id) VALUES (?,?)''', (user_id, friend_id))
+                cursor.execute('''INSERT INTO userFriends (user_id, friend_id) VALUES (?,?)''', (friend_id, user_id))
+                conn.commit()
+                flash("Succeed!", "success")
         conn.close()
         return render_template('search_users.html', users=users, query=query)
 

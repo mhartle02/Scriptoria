@@ -175,6 +175,7 @@ def home():
 def login():
     if request.method == 'GET':
         return render_template('login.html')
+
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -182,43 +183,38 @@ def login():
         try:
             conn = sqlite3.connect('Scriptoria.db')
             cursor = conn.cursor()
+            #Changed this to only query by username to allow for encrypted password checking in the following code
             cursor.execute("""
-                SELECT id, name, permission, pronouns, bio, profile_picture
+                SELECT id, name, password, permission, pronouns, bio, profile_picture
                 FROM userLogins
-                WHERE username = ? AND password = ?
-            """, (username,password,))
+                WHERE username = ?
+            """, (username,))
             user = cursor.fetchone()
             conn.close()
 
             #Debugging
             print(f"Query Result: {user}")
 
-            if user:
+            if user and check_password_hash(user[2], password):
                 session["user_id"] = user[0]
                 session['username'] = username
                 session['name'] = user[1]
-                session['permission'] = user[2]
-
+                session['password'] = user[2]
+                session['permission'] = user[3]
+                session['pronouns'] = user[4]
+                session['bio'] = user[5]
+                session['profile_picture'] = user[6]
 
                 print("Session Data: ", dict(session))
-                #If we redirect based on the permission level of the user, we can handle it here
-                if session['permission'] == "Reader":
-                    return redirect(url_for('home'))
-                elif session['permission'] == "Author":
-                    return redirect(url_for('author'))
-                elif session['permission'] == "Admin":
-                    return redirect(url_for('home'))
-                else:
-                    return render_template('home')
+                return redirect(url_for('home'))
 
             else:
                 flash("Invalid username or password", 'danger')
                 return render_template('login.html')
+
         except Exception as e:
-            #Logging Error for debugging
             print(f"Error During login: {e}")
             flash("An Error Occurred. Please Try Again.", 'danger')
-
             return render_template('login.html')
 
 
@@ -238,7 +234,6 @@ def signup():
         print(f"This is your password: {password}")
         print(f"This is your permission: {permission}")
 
-    #Add error checking to be flashed on website if new fields are needed
         errors=[]
         if not name:
             errors.append("You must input a name")
@@ -247,48 +242,40 @@ def signup():
         if not password:
             errors.append("You must input a password")
 
+        conn = sqlite3.connect('Scriptoria.db')
+        cursor = conn.cursor()
+
+        #Adding a check for existing username
+        cursor.execute("SELECT * FROM userLogins WHERE username = ?", (username,))
+        if cursor.fetchone():
+            errors.append("That username is already taken.")
         if errors:
+            conn.close()
             return render_template('signup.html', msg="Errors:", errors=errors, show_form=False)
 
-        else:
-            hashed_password = generate_password_hash(password)
-            conn = sqlite3.connect('Scriptoria.db')
-            cursor = conn.cursor()
-            cursor.execute('''
-                INSERT INTO userLogins (name, username, password, permission)
-                VALUES (?, ?, ?, ?)
-            ''', (name, username, hashed_password, permission))
-            conn.commit()
-            cursor.execute('''SELECT id FROM userLogins WHERE username = ?''', (username,))
-            new_user = cursor.fetchone()
-            user_id = new_user[0]
-            print(f"The user's id is: {user_id}")
-            cursor.execute('''SELECT permission FROM userLogins WHERE username = ?''', (username,))
-            newest_user = cursor.fetchone()
-            permission = newest_user[0]
-            cursor.execute('''SELECT password FROM userLogins WHERE username = ?''', (username,))
-            newest_user = cursor.fetchone()
-            session['password'] = newest_user[0]
-            cursor.execute('''SELECT username FROM userLogins WHERE username = ?''', (username,))
-            newest_user2 = cursor.fetchone()
-            username = newest_user2[0]
-            cursor.execute('''SELECT pronouns FROM userLogins WHERE username = ?''', (username,))
-            newest_user3 = cursor.fetchone()
-            pronouns = newest_user3[0]
-            print(f"The user's pronouns is: {pronouns}")
+        #Now Inserting the new user
+        hashed_password = generate_password_hash(password)
+        cursor.execute('''
+            INSERT INTO userLogins (name, username, password, permission)
+            VALUES (?, ?, ?, ?)
+        ''', (name, username, hashed_password, permission))
+        conn.commit()
 
-            conn.close()
-            if permission == "Reader":
-                flash("User created!", "success")
-                return redirect(url_for('home'))
-            elif permission == "Author":
-                flash("User created!", "success")
-                return redirect(url_for('home'))
-            elif permission == "Admin":
-                flash("User created!", "success")
-                return redirect(url_for('home'))
+        cursor.execute('''
+            SELECT id, username, password, permission
+            FROM userLogins WHERE username = ?
+        ''', (username,))
+        user_data = cursor.fetchone()
+        conn.close()
+
+        if user_data:
+            user_id, username, password_hash, permission = user_data
+            session['username'] = username
+            session['password'] = password_hash
+            session['permission'] = permission
+            session['name'] = name
+            flash("User created!", "success")
             return redirect(url_for('home'))
-
     return render_template('signup.html', msg="User successfully created!", errors=[], show_form=False)
 
 @app.route('/reset', methods = ['GET', 'POST'])

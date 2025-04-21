@@ -551,6 +551,30 @@ def review():
     books = fetch_books(query)  #Fetching books from database
     return render_template("review.html", books=books, query=query)
 
+@app.route('/search_users', methods=['GET'])
+def search_users():
+    try:
+        query = request.args.get('q', '').strip()
+        conn = sqlite3.connect('Scriptoria.db')
+        cursor = conn.cursor()
+
+        if query:
+            cursor.execute("""
+                SELECT id, name, username
+                FROM userLogins
+                WHERE username LIKE ? OR name LIKE ?
+            """, (f"%{query}%", f"%{query}%"))
+            users = cursor.fetchall()
+        else:
+            users = []
+
+        conn.close()
+        return render_template('search_users.html', users=users, query=query)
+
+    except Exception as e:
+        print(f"Error during user search: {e}")
+        flash("An error occurred while searching.", "danger")
+        return render_template('search_users.html', users=[], query='')
 
 
 

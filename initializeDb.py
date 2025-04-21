@@ -1,5 +1,8 @@
 import sqlite3
 
+from werkzeug.security import generate_password_hash
+
+
 def initializeDb():
     conn = sqlite3.connect('Scriptoria.db')
     cursor = conn.cursor()
@@ -26,16 +29,17 @@ def initializeDb():
     ]
 
     for user in exampleUsers:
+        hashed_password = generate_password_hash((user['password']))
         cursor.execute('''
                 INSERT INTO userLogins (name, username, password, permission, pronouns, bio, profile_picture)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (user["name"], user["username"], user["password"], user["permission"], user["pronouns"], user["bio"], user["profile_picture"]))
+            ''', (user["name"], user["username"], hashed_password, user["permission"], user["pronouns"], user["bio"], user["profile_picture"]))
     conn.commit()
 
     cursor.execute("SELECT name, username, password, permission FROM userLogins")
     rows = cursor.fetchall()
     for row in rows:
-        print(f"Name: {row[0]}, Username: {row[1]}, Password: {row[2]}, Permission: {row[3]}")
+        print(f"Name: {row[0]}, Username: {row[1]}, Password: See table for plaintext, Permission: {row[3]}")
     #conn.close()
 
     #Making reviews database

@@ -165,9 +165,8 @@ def login():
         return render_template('login.html')
     if request.method == 'POST':
         username = request.form.get('username')
-        password = session['password']
+        password = request.form.get('password')
 
-        print(f"This is the username: {password}")
         try:
             conn = sqlite3.connect('Scriptoria.db')
             cursor = conn.cursor()
@@ -178,15 +177,15 @@ def login():
             """, (username,password,))
             user = cursor.fetchone()
             conn.close()
+
             #Debugging
-            print(f"Query Result: {user}")  # the problem is somewhere here, even when moved to before the close statement it doesn't work
+            print(f"Query Result: {user}")
 
             if user:
                 session["user_id"] = user[0]
+                session['username'] = username
                 session['name'] = user[1]
                 session['permission'] = user[2]
-
-                print(f"Permission: {session['permission']}")
 
 
                 print("Session Data: ", session)
@@ -197,7 +196,8 @@ def login():
                     return redirect(url_for('author'))
                 elif session['permission'] == "Admin":
                     return redirect(url_for('home'))
-                return render_template('home')
+                else:
+                    return render_template('home')
 
             else:
                 flash("Invalid username or password", 'danger')

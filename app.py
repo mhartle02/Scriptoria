@@ -81,73 +81,70 @@ def home():
         name = ""
         user_id = ""
         permission = ""
-    print(user_id)
 
     conn = sqlite3.connect('Scriptoria.db')
     cursor = conn.cursor()
 
-    #Handling POST for Readers
-    if request.method == 'POST' and permission == "Reader":
-        try:
-            title = request.form.get('title')
-            author = request.form.get('author')
-            description = request.form.get('description')
-            page_count = request.form.get('page_count')
-            cover_image = request.form.get('cover_image')
-            average_rating = request.form.get('average_rating')
-        except Exception as e:
-            return redirect(url_for('login'))
+    #Handling POST now based on form_type
+    if request.method == 'POST':
+        form_type = request.form.get('form_type')
 
-        print(f"Adding book: {title} by {author}")
-
-        cursor.execute("SELECT book_id FROM myBooks WHERE title = ? AND author = ?", (title, author))
-        existing_book = cursor.fetchone()
-
-        if existing_book is None:
-            cursor.execute('''
-                INSERT INTO myBooks (user_id, title, author, description, page_count, cover_image, average_rating)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', (user_id, title, author, description, page_count, cover_image, average_rating))
-            conn.commit()
-            flash("Book added to your reading list!", "success")
-        else:
-            flash("Book already in your list.", "warning")
-        #conn.close()
-        return redirect(url_for('home'))
-
-    #Handling POST for Admins
-    elif request.method == 'POST' and permission == "Admin":
-        try:
-            title = request.form.get('title')
-            author = request.form.get('author')
-
-            cursor.execute('''DELETE FROM Books WHERE title = ? AND author = ?''', (title, author))
-            conn.commit()
-            flash("Book deleted successfully!", "success")
-        except Exception as e:
+        #Reader is adding a book
+        if permission == "Reader" and not form_type:
+            try:
+                title = request.form.get('title')
+                author = request.form.get('author')
+                description = request.form.get('description')
+                page_count = request.form.get('page_count')
+                cover_image = request.form.get('cover_image')
+                average_rating = request.form.get('average_rating')
+            except Exception as e:
                 return redirect(url_for('login'))
 
-    #Handling POST for Authors
-    elif request.method == 'POST' and permission == "Author":
-        try:
-            title = request.form.get('title')
-            author = request.form.get('author')
-            description = request.form.get('description')
+            print(f"Adding book: {title} by {author}")
 
-            print(f"Title: {title}, Author: {author}, Description: {description}")
+            cursor.execute("SELECT book_id FROM myBooks WHERE title = ? AND author = ?", (title, author))
+            existing_book = cursor.fetchone()
 
-            cursor.execute('''UPDATE Books SET description = ? WHERE title = ? AND author = ?''',
-                           (description,title,author))
-            conn.commit()
-            flash("Book updated successfully!", "success")
-        except Exception as e:
-                print(f"Error: {e}")
+            if existing_book is None:
+                cursor.execute('''
+                    INSERT INTO myBooks (user_id, title, author, description, page_count, cover_image, average_rating)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ''', (user_id, title, author, description, page_count, cover_image, average_rating))
+                conn.commit()
+                flash("Book added to your reading list!", "success")
+            else:
+                flash("Book already in your list.", "warning")
+            conn.close()
+            return redirect(url_for('home'))
 
+        #Admin is deleting a book from local database
+        elif form_type =='delete' and permission == "Admin":
+            try:
+                book_id = request.form.get('book_id')
+                cursor.execute('DELETE FROM Books WHERE book_id = ?', (book_id,))
+                conn.commit()
+                flash("Book deleted successfully!", "success")
+            except Exception as e:
+                print(f"Error deleting book: {e}")
+                flash("Failed to delete book.", "error")
 
+        #Author is editing a book's information
+        elif form_type == 'edit' and permission == "Author":
+            try:
+                book_id = request.form.get('book_id')
+                description = request.form.get('description')
+                cursor.execute('UPDATE Books SET description = ? WHERE book_id = ?', (description, book_id))
+                conn.commit()
+                flash("Book updated successfully!", "success")
+            except Exception as e:
+                print(f"Error updating book: {e}")
+                flash("Failed to update book.", "error")
+
+    #Handling GET request
     query = request.args.get("q", "")
     books = []
     if query:
-        #Now searching local database before querying GoogleBooksAPI
         cursor.execute('''
             SELECT * FROM Books
             WHERE title LIKE ? OR author LIKE ?
@@ -159,12 +156,13 @@ def home():
                 book_id = row[0]
                 #Fetch user reviews for book
                 cursor.execute('''
-                                SELECT userLogins.name, Reviews.review_text, Reviews.rating
-                                FROM Reviews
-                                JOIN userLogins ON Reviews.user_id = userLogins.id
-                                WHERE Reviews.book_id = ?
-                            ''', (book_id,))
+                    SELECT userLogins.name, Reviews.review_text, Reviews.rating
+                    FROM Reviews
+                    JOIN userLogins ON Reviews.user_id = userLogins.id
+                    WHERE Reviews.book_id = ?
+                ''', (book_id,))
                 review_rows = cursor.fetchall()
+
                 #Formatting reviews into list of dictionaries
                 book_reviews = [
                     {"reviewer": r[0], "text": r[1], "rating": r[2]}

@@ -21,7 +21,7 @@
             {% if already_sent %}
                 <p><em>Friend request already sent.</em></p>
             {% else %}
-                <form action="{{ url_for('view_user_profile', user_id=user_id) }}" method="POST">
+                <form action="{{ url_for('view_user', user_id=user_id) }}" method="POST">
                     <button type="submit">Send Friend Request</button>
                 </form>
             {% endif %}

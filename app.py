@@ -624,7 +624,8 @@ def accept_friend():
     return redirect(url_for("profile"))
 
 @app.route('/user/<int:user_id>', methods=["GET","POST"])
-def view_user_profile(user_id):
+def view_user(user_id):
+    session_user_id = session.get("user_id")
     conn = sqlite3.connect('Scriptoria.db')
     cursor = conn.cursor()
     #Get user info, could display book clubs or friendships
@@ -635,22 +636,6 @@ def view_user_profile(user_id):
         flash("User not found.", "error")
         conn.close()
         return redirect(url_for('search_users'))
-    else:
-        return render_template(
-            'user_profile.html',
-            user=user
-        )
-
-
-@app.route('/user/<int:user_id>', methods=["GET","POST"])
-def view_user(user_id):
-    session_user_id = session.get("user_id")
-    conn = sqlite3.connect('Scriptoria.db')
-    cursor = conn.cursor()
-    #Get user info, could display book clubs or friendships
-    cursor.execute("SELECT username, name, pronouns, bio FROM userLogins WHERE id = ?", (user_id,))
-    user = cursor.fetchone()
-
 
     already_sent = False
     is_self = (session_user_id == user_id)

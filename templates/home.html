@@ -94,7 +94,6 @@
                             {% elif session['permission'] == "Author" %}
                                 <input type="hidden" name="title" value="{{ book.title }}">
                                 <input type="hidden" name="author" value="{{ book.authors }}">
-                                <input type="hidden" name="description" value="{{ book.description }}">
                                 <input type="hidden" name="page_count" value="{{ book.page_count }}">
                                 <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
                                 <input type="hidden" name="average_rating" value="{{ book.average_rating }}">

@@ -136,12 +136,12 @@ def home():
 
             print(f"Title: {title}, Author: {author}, Description: {description}")
 
-            cursor.execute('''UPDATE FROM Books SET description = ? WHERE title = ? AND author = ?''',
+            cursor.execute('''UPDATE Books SET description = ? WHERE title = ? AND author = ?''',
                            (description,title,author))
             conn.commit()
             flash("Book updated successfully!", "success")
         except Exception as e:
-                return redirect(url_for('login'))
+                print(f"Error: {e}")
 
 
     query = request.args.get("q", "")

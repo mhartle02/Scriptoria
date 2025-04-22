@@ -113,11 +113,10 @@ def initializeDb():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS userFriends (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            friend_id INTEGER NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES userLogins(id) ON DELETE CASCADE,
-            FOREIGN KEY (friend_id) REFERENCES userLogins(id) ON DELETE CASCADE,
-            UNIQUE(user_id, friend_id)
+            requester_id INTEGER NOT NULL,
+            receiver_id INTEGER NOT NULL,
+            status TEXT CHECK(status IN ('pending', 'accepted')) DEFAULT 'pending',
+            UNIQUE(requester_id, receiver_id)
         )
     ''')
 
@@ -130,18 +129,16 @@ def initializeDb():
     reader2_id = cursor.fetchone()[0]
     print("reader2_id:", reader2_id)
 
-    #Insert friendship both ways (mutual) -> Can tweak this to instead make friends work more like 'following' where they are one-way
-    #However, changing this would also require tweaking the userFriends table and idk if I wanna do that
     if reader_id and reader2_id:
-        cursor.execute('INSERT INTO userFriends (user_id, friend_id) VALUES (?, ?)', (reader_id, reader2_id))
-        cursor.execute('INSERT INTO userFriends (user_id, friend_id) VALUES (?, ?)', (reader2_id, reader_id))
+        cursor.execute('INSERT INTO userFriends (requester_id, receiver_id, status) VALUES (?, ?, ?)',(reader_id, reader2_id, 'accepted'))
+        cursor.execute('INSERT INTO userFriends (requester_id, receiver_id, status) VALUES (?, ?, ?)',(reader2_id, reader_id, 'accepted'))
         print("Friendship established between John (reader) and Jane (reader2).")
     else:
         print("Error: Could not find user IDs for reader and reader2")
     conn.commit()
 
     #Friends list debugging code
-    cursor.execute('SELECT user_id, friend_id FROM userFriends')
+    cursor.execute('SELECT requester_id, receiver_id FROM userFriends')
     friendships = cursor.fetchall()
     for f in friendships:
         print(f"Friendship: {f[0]} <-> {f[1]}")

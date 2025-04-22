@@ -54,6 +54,26 @@
                 {% else %}
                     <p>You haven't added any friends yet.</p>
                 {% endif %}
+
+                <div class="pending-friends-section">
+                    <h2>Pending Friend Requests</h2>
+                    {% if pending_requests %}
+                        <ul>
+                            {% for pr in pending_requests %}
+                                <li>
+                                    {{ pr[2] }} ({{ pr[1] }})
+                                    <form action="{{ url_for('accept_friend') }}" method="POST" style="display:inline;">
+                                        <input type="hidden" name="requester_id" value="{{ pr[0] }}">
+                                        <button type="submit">Accept</button>
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No pending friend requests.</p>
+                    {% endif %}
+                </div>
+
             </div>
         </div>
     </div>

@@ -388,41 +388,6 @@ def my_reviews():
     conn.close()
     return render_template('my_reviews.html', reviews=reviews)
 
-
-
-
-
-"""@app.route('/delete_books', methods=['GET','POST'])
- def delete_books():
-         user_id = session['user_id']
-         conn = sqlite3.connect('Scriptoria.db')
-         cursor = conn.cursor()
-         cursor.execute(
-             '''SELECT book_id, title, author, description, page_count, cover_image, average_rating FROM myBooks where user_id = ?''',
-             (user_id,))
-         books = cursor.fetchall()
-         for i in range(len(books)):
-             book_id = books[i][0]
-         cursor.execute('''DELETE FROM myBooks where user_id = ? AND book_id = ?''', (user_id, book_id,))
-         conn.commit()
-         cursor.execute('''SELECT book_id, title, author, description, page_count, cover_image, average_rating
-                           FROM myBooks WHERE user_id = ?''', (user_id,))
-         books = cursor.fetchall()
-         conn.close()
-
-         book_list = []
-         for book in books:
-             book_list.append({
-                 "book_id": book[0],
-                 "title": book[1],
-                 "author": book[2],
-                 "description": book[3],
-                 "page_count": book[4],
-                 "cover_image": book[5],
-                 "average_rating": book[6]
-             })
-         return render_template('my_books.html', books = book_list)"""
-
 @app.route('/profile', methods=["GET", "POST"])
 def profile():
     if "user_id" not in session:
@@ -454,22 +419,37 @@ def profile():
 
     #Fetching friends for display on profile page
     cursor.execute('''
-        SELECT u.name, u.username
+        SELECT DISTINCT u.name, u.username
         FROM userFriends f
-        JOIN userLogins u ON f.friend_id = u.id
-        WHERE f.user_id = ?
-    ''', (user_id,))
+        JOIN userLogins u ON (
+            (f.requester_id = ? AND u.id = f.receiver_id)
+            OR 
+            (f.receiver_id = ? AND u.id = f.requester_id)
+        )
+        WHERE f.status = 'accepted'
+    ''', (user_id, user_id))
     friends = cursor.fetchall()
+
+    #Fetching pending friends for display
+    print("Looking for pending requests for user_id:", user_id)
+    cursor.execute('''
+            SELECT u.id, u.username, u.name
+            FROM userFriends f
+            JOIN userLogins u ON f.requester_id = u.id
+            WHERE f.receiver_id = ? AND f.status = 'pending'
+        ''', (user_id,))
+    pending_requests = cursor.fetchall()
+    print("Pending requests fetched:", pending_requests)
 
     #Debugging print(s) again
     print(f"Fetched friends: {friends}")
-    print("Current session user ID:", user_id)
+    print(f"Pending requests: {pending_requests}")
     cursor.execute("SELECT * FROM userFriends")
     print("All userFriends rows:", cursor.fetchall())
 
     conn.close()
 
-    return render_template("profile.html", user=user, friends=friends)
+    return render_template("profile.html", user=user, friends=friends, pending_requests = pending_requests)
 
 
 @app.route("/review", methods=["GET", "POST"])
@@ -538,7 +518,7 @@ def review():
     books = fetch_books(query)  #Fetching books from database
     return render_template("review.html", books=books, query=query)
 
-@app.route('/search_users', methods=['GET'])
+@app.route('/search_users', methods=['GET', 'POST'])
 def search_users():
     try:
         query = request.args.get('q', '').strip()
@@ -552,9 +532,35 @@ def search_users():
                 WHERE username LIKE ? OR name LIKE ?
             """, (f"%{query}%", f"%{query}%"))
             users = cursor.fetchall()
+            print(f"List of users: {users}")
         else:
             users = []
+        if request.method == "POST":
+            user_id = session.get('user_id')
+            friend_id = request.form.get('friend_id')
+            if str(user_id) == friend_id:
+                flash("You can't add yourself", "warnings")
+            else:
+                #Checking if friend request is already pending
+                cursor.execute('''
+                    SELECT status FROM userFriends
+                    WHERE requester_id = ? AND receiver_id = ?
+                ''', (user_id, friend_id))
+                existing = cursor.fetchone()
 
+                if existing:
+                    flash("Friend request already sent.", "info")
+                else:
+                    #Send 'pending' friend request
+                    cursor.execute('''
+                        INSERT INTO userFriends (requester_id, receiver_id, status)
+                        VALUES (?, ?, 'pending')
+                    ''', (user_id, friend_id))
+                    conn.commit()
+                    cursor.execute("SELECT * FROM userFriends")
+                    print("All entries in userFriends after sending request:", cursor.fetchall())
+                    #Debugging Print ^
+                    flash("Friend request sent!", "success")
         conn.close()
         return render_template('search_users.html', users=users, query=query)
 
@@ -562,6 +568,44 @@ def search_users():
         print(f"Error during user search: {e}")
         flash("An error occurred while searching.", "danger")
         return render_template('search_users.html', users=[], query='')
+
+@app.route('/accept_friend', methods=['POST'])
+def accept_friend():
+    if 'user_id' not in session:
+        flash("Please log in to accept friend requests.", "error")
+        return redirect(url_for("login"))
+
+    receiver_id = session['user_id']
+    requester_id = request.form.get('requester_id')
+    try:
+        conn = sqlite3.connect('Scriptoria.db')
+        cursor = conn.cursor()
+
+        #Update the friend request to be accepted
+        cursor.execute('''
+                    UPDATE userFriends
+                    SET status = 'accepted'
+                    WHERE requester_id = ? AND receiver_id = ?
+                ''', (requester_id, receiver_id))
+
+
+        #Insert the reverse friendship row if not already there
+        cursor.execute('''
+                    INSERT OR IGNORE INTO userFriends (requester_id, receiver_id, status)
+                    VALUES (?, ?, 'accepted')
+                ''', (receiver_id, requester_id))
+
+        conn.commit()
+        conn.close()
+
+        flash("Friend request accepted!", "success")
+    except Exception as e:
+        print(f"Error accepting friend: {e}")
+        flash("Failed to accept friend request.", "danger")
+
+    return redirect(url_for("profile"))
+
+
 
 
 

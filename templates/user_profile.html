@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user[1] }}'s Profile</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="topnav">
+        <a href="/">Home</a>
+        <a href="/search_users">Search Users</a>
+        <a href="/profile">My Profile</a>
+    </div>
+
+    <div class="background">
+        <h1>{{ user[1] }}'s Profile</h1>
+        <p><strong>Username:</strong> {{ user[0] }}</p>
+        <p><strong>Pronouns:</strong> {{ user[2] or "Not set" }}</p>
+        <p><strong>Bio:</strong> {{ user[3] or "No bio yet." }}</p>
+        {% if session_user_id and not is_self %}
+            {% if already_sent %}
+                <p><em>Friend request already sent.</em></p>
+            {% else %}
+                <form action="{{ url_for('view_user', user_id=user_id) }}" method="POST">
+                    <button type="submit">Send Friend Request</button>
+                </form>
+            {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>

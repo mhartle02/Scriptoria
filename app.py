@@ -120,10 +120,28 @@ def home():
         try:
             title = request.form.get('title')
             author = request.form.get('author')
-            google_book_id = request.form.get('google_book_id')
+
+            cursor.execute('''DELETE FROM Books WHERE title = ? AND author = ?''', (title, author))
+            conn.commit()
+            flash("Book deleted successfully!", "success")
         except Exception as e:
                 return redirect(url_for('login'))
 
+    #Handling POST for Authors
+    elif request.method == 'POST' and permission == "Author":
+        try:
+            title = request.form.get('title')
+            author = request.form.get('author')
+            description = request.form.get('description')
+
+            print(f"Title: {title}, Author: {author}, Description: {description}")
+
+            cursor.execute('''UPDATE Books SET description = ? WHERE title = ? AND author = ?''',
+                           (description,title,author))
+            conn.commit()
+            flash("Book updated successfully!", "success")
+        except Exception as e:
+                print(f"Error: {e}")
 
 
     query = request.args.get("q", "")
@@ -608,7 +626,6 @@ def accept_friend():
 @app.route('/user/<int:user_id>', methods=["GET","POST"])
 def view_user(user_id):
     session_user_id = session.get("user_id")
-
     conn = sqlite3.connect('Scriptoria.db')
     cursor = conn.cursor()
     #Get user info, could display book clubs or friendships

@@ -88,7 +88,20 @@
                                 <input type="hidden" name="page_count" value="{{ book.page_count }}">
                                 <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
                                 <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
-                                <button type="submit">Delete Book from List</button>
+                                <form action="{{ url_for('my_books') }}" method="POST">
+                                    <button type="submit">Remove book from list</button>
+                                </form>
+                            {% elif session['permission'] == "Author" %}
+                                <input type="hidden" name="title" value="{{ book.title }}">
+                                <input type="hidden" name="author" value="{{ book.authors }}">
+                                <input type="hidden" name="page_count" value="{{ book.page_count }}">
+                                <input type="hidden" name="cover_image" value="{{ book.cover_image }}">
+                                <input type="hidden" name="average_rating" value="{{ book.average_rating }}">
+                                <form action="{{ url_for('my_books') }}" method="POST">
+                                    <label for="description">Description:</label><br>
+                                    <textarea name="description" id="description" rows="4" cols="50">{{ book[4] or '' }}</textarea><br><br>
+                                    <button type="submit">Update Description</button>
+                                </form>
                             {% endif %}
                         </form>
                     </div>

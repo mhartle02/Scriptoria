@@ -21,16 +21,18 @@ def fetch_books(query, max_results=5):
     books = []
     for item in data.get('items', []):
         volume_info = item.get('volumeInfo', {})
-        book = Book(
-            google_book_id=item.get('id', 'Unknown ID'),
-            title=volume_info.get('title', 'Unknown Title'),
-            authors=volume_info.get('authors', ['Unknown Author']),
-            #authors=', '.join(volume_info.get('authors', ['Unknown Author'])),   #Commented out bc doesn't work but might be needed later (with tweaking)
-            description=volume_info.get('description', 'No Description'),
-            page_count=volume_info.get('pageCount', 0),
-            cover_image=volume_info.get('imageLinks', {}).get('thumbnail', ''),
-            average_rating=0
-        )
+        google_book_id = item.get('id', 'Unknown ID')
+        book = {
+            'book_id': None,  #Not in local database
+            'google_book_id': google_book_id,
+            'title': volume_info.get('title', 'Unknown Title'),
+            'authors': ', '.join(volume_info.get('authors', ['Unknown Author'])),
+            'description': volume_info.get('description', 'No Description'),
+            'page_count': volume_info.get('pageCount', 0),
+            'cover_image': volume_info.get('imageLinks', {}).get('thumbnail', ''),
+            'average_rating': 0.0,
+            #'reviews': []  #No reviews from local database
+        }
         books.append(book)
     #Inserting fetched books into book database
     insert_books_into_db(books)
@@ -49,22 +51,22 @@ def insert_books_into_db(books):
                 (google_book_id, title, author, description, page_count, cover_image, average_rating)
                 VALUES (?, ?, ?, ?, ?, ?, COALESCE(?,0))
             ''', (
-                book.google_book_id,
-                book.title,
-                book.authors,
-                book.description,
-                book.page_count,
-                book.cover_image,
-                book.average_rating
+                book['google_book_id'],
+                book['title'],
+                book['authors'],
+                book['description'],
+                book['page_count'],
+                book['cover_image'],
+                book['average_rating']
             ))
 
             if cursor.rowcount>0:
-                print(f"Added book to database: {book.title}")
+                print(f"Added book to database: {book['title']}")
             else:
-                print(f"Skipped duplicate book: {book.title}")
+                print(f"Skipped duplicate book: {book['title']}")
 
         except sqlite3.Error as e:
-            print(f"Skipping duplicate book: {book.title}")
+            print(f"Skipping duplicate book: {book['title']}")
 
     conn.commit()
     conn.close()
@@ -88,6 +90,10 @@ def home():
     #Handling POST now based on form_type
     if request.method == 'POST':
         form_type = request.form.get('form_type')
+
+        #Debugging
+        print(f"Form type: {form_type}, Permission: {session['permission']}")
+        permission = session['permission']
 
         #Reader is adding a book
         if permission == "Reader" and not form_type:
@@ -120,11 +126,27 @@ def home():
 
         #Admin is deleting a book from local database
         elif form_type =='delete' and permission == "Admin":
+            #print("Admin is deleting a book")
             try:
                 book_id = request.form.get('book_id')
-                cursor.execute('DELETE FROM Books WHERE book_id = ?', (book_id,))
-                conn.commit()
-                flash("Book deleted successfully!", "success")
+                #print(f"book_id for deletion: {book_id}")       #Debugging
+
+                #Adding book to table of deleted books to prevent re-adding from GoogleBooksAPI
+                cursor.execute('SELECT google_book_id FROM Books WHERE book_id = ?', (book_id,))
+                result = cursor.fetchone()
+                #print(f"Result from DB query: {result}")        #Debugging
+
+                if result:
+                    #Logging Book for intentionally deleted
+                    google_book_id = result[0]
+                    print(f"Attempting to delete book with ID {book_id} and google_book_id: {google_book_id}")
+                    cursor.execute('INSERT OR IGNORE INTO deletedBooks (google_book_id) VALUES (?)', (google_book_id,))
+                    conn.commit()
+                    #print(f"Deleting book {google_book_id}") #Debug
+                    #Now deleting book
+                    cursor.execute('DELETE FROM Books WHERE book_id = ?', (book_id,))
+                    conn.commit()
+                    flash("Book deleted successfully!", "success")
             except Exception as e:
                 print(f"Error deleting book: {e}")
                 flash("Failed to delete book.", "error")
@@ -162,7 +184,6 @@ def home():
                     WHERE Reviews.book_id = ?
                 ''', (book_id,))
                 review_rows = cursor.fetchall()
-
                 #Formatting reviews into list of dictionaries
                 book_reviews = [
                     {"reviewer": r[0], "text": r[1], "rating": r[2]}
@@ -183,6 +204,14 @@ def home():
         else:
             #If not found in local DB, query GoogleBooksAPI
             books = fetch_books(query)
+
+            #Debug
+            print("Searching Google Books API")
+
+            #Filtering out books that were deleted by admins
+            cursor.execute("SELECT google_book_id FROM deletedBooks")
+            deleted_ids = {row[0] for row in cursor.fetchall()}
+            books = [book for book in books if book['google_book_id'] not in deleted_ids]
 
     conn.close()
     return render_template('home.html', books=books, query=query)

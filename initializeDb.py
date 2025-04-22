@@ -146,8 +146,19 @@ def initializeDb():
     cursor.execute("SELECT * FROM userFriends")
     print("All userFriends rows:", cursor.fetchall())
 
-    conn.close()
 
+
+    #Deleting-Books-fix table
+    cursor.execute("DROP TABLE IF EXISTS deletedBooks")
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS deletedBooks (
+                google_book_id TEXT PRIMARY KEY
+            )
+        ''')
+
+
+
+    conn.close()
 
 if __name__ == "__main__":
     initializeDb()

@@ -605,6 +605,52 @@ def accept_friend():
 
     return redirect(url_for("profile"))
 
+@app.route('/user/<int:user_id>', methods=["GET","POST"])
+def view_user(user_id):
+    session_user_id = session.get("user_id")
+
+    conn = sqlite3.connect('Scriptoria.db')
+    cursor = conn.cursor()
+    #Get user info, could display book clubs or friendships
+    cursor.execute("SELECT username, name, pronouns, bio FROM userLogins WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+
+    if not user:
+        flash("User not found.", "error")
+        conn.close()
+        return redirect(url_for('search_users'))
+
+    already_sent = False
+    is_self = (session_user_id == user_id)
+
+    if session_user_id and not is_self:
+        cursor.execute("""
+                SELECT status FROM userFriends 
+                WHERE requester_id = ? AND receiver_id = ?
+            """, (session_user_id, user_id))
+        existing = cursor.fetchone()
+        already_sent = existing is not None
+
+        #Checking that request has not already been sent & sending
+        if request.method == "POST" and not already_sent:
+            cursor.execute("""
+                    INSERT INTO userFriends (requester_id, receiver_id, status)
+                    VALUES (?, ?, 'pending')
+                """, (session_user_id, user_id))
+            conn.commit()
+            flash("Friend request sent!", "success")
+            already_sent = True
+
+    conn.close()
+    return render_template(
+        'user_profile.html',
+        user=user,
+        user_id=user_id,
+        session_user_id=session_user_id,
+        already_sent=already_sent,
+        is_self=is_self
+    )
+
 
 
 

@@ -30,7 +30,9 @@
             <ul class="user-results">
                 {% for user in users %}
                     <li>
-                        <strong>{{ user[1] }}</strong> ({{ user[2] }})
+                        <a href="{{ url_for('view_user', user_id=user[0]) }}">
+                            <strong>{{ user[1] }}</strong>
+                        </a> ({{ user[2] }})
                                 <form action="{{ url_for('search_users') }}" method="POST" class="add-friend">
                                     <input type="hidden" name="friend_id" value="{{ user[0] }}">
                                     <button type="submit">Add Friend</button>

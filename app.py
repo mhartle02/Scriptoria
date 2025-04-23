@@ -420,8 +420,29 @@ def my_reviews():
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+    if request.method == "POST":
+        form_type = request.form.get("form_type")
+        review_id = request.form.get("review_id")
+
+        if form_type == "edit":
+            updated_text = request.form.get("updated_text")
+            updated_rating = request.form.get("updated_rating")
+            cursor.execute("""
+                        UPDATE Reviews
+                        SET review_text = ?, rating = ?
+                        WHERE review_id = ? AND user_id = ?
+                    """, (updated_text, updated_rating, review_id, user_id))
+            conn.commit()
+            flash("Review updated successfully!", "success")
+
+        elif form_type == "delete":
+            cursor.execute("DELETE FROM Reviews WHERE review_id = ? AND user_id = ?", (review_id, user_id))
+            conn.commit()
+            flash("Review deleted successfully.", "success")
+
+    #Display Reviews
     cursor.execute('''
-        SELECT Reviews.review_text, Reviews.rating, Reviews.date_created,
+        SELECT Reviews.review_id, Reviews.review_text, Reviews.rating, Reviews.date_created,
                Books.title, Books.author, Books.cover_image
         FROM Reviews
         JOIN Books ON Reviews.book_id = Books.book_id

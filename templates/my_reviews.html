@@ -44,6 +44,23 @@
                             <p><strong>My Review:</strong> {{ review.review_text }}</p>
                             <p><em>Reviewed on: {{ review.date_created }}</em></p>
                         </div>
+
+                        <!-- Updating Review -->
+                        <form method="POST" action="{{ url_for('my_reviews') }}">
+                            <input type="hidden" name="form_type" value="edit">
+                            <input type="hidden" name="review_id" value="{{ review.review_id }}">
+                            <textarea name="updated_text" required>{{ review.review_text }}</textarea>
+                            <input type="number" name="updated_rating" min="1" max="5" value="{{ review.rating }}" required>
+                            <button type="submit">Update Review</button>
+                        </form>
+
+                        <!-- Deleting Review -->
+                        <form method="POST" action="{{ url_for('my_reviews') }}" onsubmit="return confirm('Are you sure you want to delete this review?');">
+                            <input type="hidden" name="form_type" value="delete">
+                            <input type="hidden" name="review_id" value="{{ review.review_id }}">
+                            <button type="submit">Delete Review</button>
+                        </form>
+
                     </li>
                 {% endfor %}
             </ul>

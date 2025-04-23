@@ -114,7 +114,12 @@
                             <h4>User Reviews:</h4>
                             <ul>
                                 {% for review in book.reviews %}
-                                    <li><strong>{{ review.reviewer }}</strong>: "{{ review.text }}" (Rating: {{ review.rating }})</li>
+                                    <li><strong>
+                                        <a href="{{ url_for('user_profile', user_id=review.reviewer_id) }}">
+                                          {{ review.reviewer }}
+                                        </a>
+                                    </strong>
+                                        :"{{ review.text }}" (Rating: {{ review.rating }})</li>
                                 {% endfor %}
                             </ul>
                         </div>

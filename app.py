@@ -178,7 +178,7 @@ def home():
                 book_id = row[0]
                 #Fetch user reviews for book
                 cursor.execute('''
-                    SELECT userLogins.name, Reviews.review_text, Reviews.rating
+                    SELECT userLogins.id, userLogins.name, Reviews.review_text, Reviews.rating
                     FROM Reviews
                     JOIN userLogins ON Reviews.user_id = userLogins.id
                     WHERE Reviews.book_id = ?
@@ -186,7 +186,7 @@ def home():
                 review_rows = cursor.fetchall()
                 #Formatting reviews into list of dictionaries
                 book_reviews = [
-                    {"reviewer": r[0], "text": r[1], "rating": r[2]}
+                    {"reviewer_id": r[0], "reviewer": r[1], "text": r[2], "rating": r[3]}
                     for r in review_rows
                 ]
 
@@ -651,7 +651,7 @@ def accept_friend():
     return redirect(url_for("profile"))
 
 @app.route('/user/<int:user_id>', methods=["GET","POST"])
-def view_user(user_id):
+def user_profile(user_id):
     session_user_id = session.get("user_id")
     conn = sqlite3.connect('Scriptoria.db')
     cursor = conn.cursor()

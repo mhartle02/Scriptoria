@@ -21,6 +21,7 @@
     <div class = "background">
         <h2>My Profile</h2>
         <div class = "profile">
+            <img src="{{ user[4] or url_for('static', filename='images/default_profile.jpg') }}" class="profile-pic" alt="Profile Picture">
             <p><strong>Username: </strong> {{ user[0] }}</p>
             <p><strong>Name: </strong> {{ user[1] }}</p>
 

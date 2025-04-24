@@ -677,7 +677,7 @@ def user_profile(user_id):
     conn = sqlite3.connect('Scriptoria.db')
     cursor = conn.cursor()
     #Get user info, could display book clubs or friendships
-    cursor.execute("SELECT username, name, pronouns, bio FROM userLogins WHERE id = ?", (user_id,))
+    cursor.execute("SELECT username, name, pronouns, bio, profile_picture FROM userLogins WHERE id = ?", (user_id,))
     user = cursor.fetchone()
 
     if not user:
@@ -687,6 +687,18 @@ def user_profile(user_id):
 
     already_sent = False
     is_self = (session_user_id == user_id)
+
+    if is_self:
+        cursor.execute("""
+                SELECT u.username, u.name
+                FROM userFriends f
+                JOIN userLogins u ON u.id = CASE
+                    WHEN f.requester_id = ? THEN f.receiver_id
+                    ELSE f.requester_id
+                END
+                WHERE (f.requester_id = ? OR f.receiver_id = ?) AND f.status = 'accepted'
+            """, (user_id, user_id, user_id))
+        friends = cursor.fetchall()
 
     if session_user_id and not is_self:
         cursor.execute("""

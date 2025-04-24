@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ user[1] }}'s Profile</title>
-    <link rel="stylesheet" href="../static/style.css">
+    <link href="../static/style.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
     <div class="topnav">
@@ -33,8 +33,40 @@
             </div>
         </div>
 
+        <!-- Display user's reviews  -->
+        {% if user_reviews %}
+            <div class="review-section">
+                <h2>{{ user[1] }}'s Reviews</h2>
+                <ul class="review-list">
+                    {% for review in user_reviews %}
+                        <li class="review-card">
+                            <img src="{{ review['cover_image'] }}" alt="Book Cover" class="review-cover">
+                            <div class="review-details">
+                                <h3>{{ review['title'] }}</h3>
+                                <p><em>by {{ review['author'] }}</em></p>
+                                <p>
+                                    <strong>Rating:</strong>
+                                    {% for i in range(review['rating']) %}
+                                        <span class="star full">★</span>
+                                    {% endfor %}
+                                    {% for i in range(5 - review['rating']) %}
+                                        <span class="star empty">☆</span>
+                                    {% endfor %}
+                                    ({{ review['rating'] }}/5)
+                                </p>
+                                <p><strong>Review:</strong> {{ review['review_text'] }}</p>
+                                <p><em>Reviewed on {{ review['date_created'] }}</em></p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <p>{{ user[1] }} hasn’t reviewed any books yet.</p>
+        {% endif %}
+
         <!-- Display friends if viewing own public profile -->
-        {% if is_self and friends %}
+        <!-- {% if is_self and friends %}
             <div class="friends-list">
                 <h3>Your Friends</h3>
                 {% for friend in friends %}
@@ -46,7 +78,7 @@
                     </div>
                 {% endfor %}
             </div>
-        {% endif %}
+        {% endif %} -->
 
 
     </div>

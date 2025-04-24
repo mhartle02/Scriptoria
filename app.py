@@ -718,6 +718,33 @@ def user_profile(user_id):
             flash("Friend request sent!", "success")
             already_sent = True
 
+    #Retrieving reviews for display
+    cursor.execute('''
+        SELECT Reviews.review_text, Reviews.rating, Reviews.date_created,
+               Books.title, Books.author, Books.cover_image
+        FROM Reviews
+        JOIN Books ON Reviews.book_id = Books.book_id
+        WHERE Reviews.user_id = ?
+        ORDER BY Reviews.date_created DESC
+    ''', (user_id,))
+    rows = cursor.fetchall()
+
+    #Converting to dictionaries so you can access keys in Jinja
+    user_reviews = [
+        {
+            'review_text': row[0],
+            'rating': row[1] or 0,
+            'date_created': row[2],
+            'title': row[3],
+            'author': row[4],
+            'cover_image': row[5] or url_for('static', filename='images/default_book_cover.jpg')
+        }
+        for row in rows
+    ]
+
+
+
+
     conn.close()
     return render_template(
         'user_profile.html',
@@ -725,7 +752,9 @@ def user_profile(user_id):
         user_id=user_id,
         session_user_id=session_user_id,
         already_sent=already_sent,
-        is_self=is_self
+        is_self=is_self,
+        #friends = friends if is_self else [],
+        user_reviews = user_reviews
     )
 
 

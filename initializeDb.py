@@ -22,8 +22,8 @@ def initializeDb():
 
     #Temporary, for debugging
     exampleUsers = [
-        {"name": "John", "username": "reader", "password": "1000", "permission": "Reader", "pronouns": "he/him", "bio": "Example Bio", "profile_picture" : "example_profile_picture_link"},
-        {"name": "Jane", "username": "reader2", "password": "2000", "permission": "Reader", "pronouns": "she/her", "bio": "Example Bio", "profile_picture": "example_profile_picture_link"},
+        {"name": "John", "username": "reader", "password": "1000", "permission": "Reader", "pronouns": "he/him", "bio": "Example Bio", "profile_picture" : ""},
+        {"name": "Jane", "username": "reader2", "password": "2000", "permission": "Reader", "pronouns": "she/her", "bio": "Example Bio", "profile_picture": ""},
         {"name": "John", "username": "admin", "password": "1234", "permission": "Admin", "pronouns": "", "bio": "", "profile_picture": ""},
         {"name": "John", "username": "author", "password": "2345", "permission": "Author", "pronouns": "", "bio": "", "profile_picture": ""}
     ]

@@ -13,19 +13,42 @@
     </div>
 
     <div class="background">
-        <h1>{{ user[1] }}'s Profile</h1>
-        <p><strong>Username:</strong> {{ user[0] }}</p>
-        <p><strong>Pronouns:</strong> {{ user[2] or "Not set" }}</p>
-        <p><strong>Bio:</strong> {{ user[3] or "No bio yet." }}</p>
-        {% if session_user_id and not is_self %}
-            {% if already_sent %}
-                <p><em>Friend request already sent.</em></p>
-            {% else %}
-                <form action="{{ url_for('view_user', user_id=user_id) }}" method="POST">
-                    <button type="submit">Send Friend Request</button>
-                </form>
-            {% endif %}
+        <div class="profile-container">
+            <img src="{{ user[4] or url_for('static', filename='images/default_profile.jpg') }}" class="profile-pic" alt="Profile Picture">
+            <div class="profile-info">
+                <h1>{{ user[1] }}</h1>
+                <p><strong>Username:</strong> {{ user[0] }}</p>
+                <p><strong>Pronouns:</strong> {{ user[2] or "Not set" }}</p>
+                <p><strong>Bio:</strong> {{ user[3] or "No bio yet." }}</p>
+
+                {% if session_user_id and not is_self %}
+                    {% if already_sent %}
+                        <p><em>Friend request already sent.</em></p>
+                    {% else %}
+                        <form action="{{ url_for('view_user', user_id=user_id) }}" method="POST">
+                            <button type="submit">Send Friend Request</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Display friends if viewing own public profile -->
+        {% if is_self and friends %}
+            <div class="friends-list">
+                <h3>Your Friends</h3>
+                {% for friend in friends %}
+                    <div class="friend-item">
+                        <strong>{{ friend['username'] }}</strong>
+                        {% if friend['name'] %}
+                            ({{ friend['name'] }})
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
         {% endif %}
+
+
     </div>
 </body>
 </html>

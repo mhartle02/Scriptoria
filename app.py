@@ -681,11 +681,9 @@ def book_club():
     clubs = cursor.fetchall()
     if request.method == "POST":
         club_id = request.form.get('club_id')
-        user_id = request.form.get('user_id')
-
-
-        print(f"Id = {club_id}")
-        print(f"Id = {user_id}")
+        user_id = session['user_id']
+        print(f"Club_Id = {club_id}")
+        print(f"User_id = {user_id}")
         cursor.execute('''
             SELECT * FROM clubMembers WHERE club_id = ? AND user_id = ?
         ''', (club_id, user_id,))
@@ -696,7 +694,7 @@ def book_club():
             cursor.execute('''INSERT INTO clubMembers (club_id, user_id)
                 VALUES (?, ?)''', (club_id,user_id,))
             conn.commit()
-            flash("You've joined the club!", "success")
+            flash("Successfully joined the club!", "success")
         conn.close()
     return render_template('book_club.html', clubs=clubs)
 

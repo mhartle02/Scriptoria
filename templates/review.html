@@ -43,7 +43,7 @@
         {% if session['username']%}
             <a href = "/">Home</a>
             <a href = "my_books">My Books</a>
-            <a href = "bookclub">Book clubs</a>
+            <a href="{{ url_for('book_club') }}">Book clubs</a>
             <a href="my_reviews">My Reviews</a>
             <a href=" search_users ">Search Users</a>
 

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book List</title>
+    <link href="../static/style.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <div class = "topnav">
+        {% if session['username']%}
+            <a href = "/">Home</a>
+            <a href = "my_books">My Books</a>
+            <a href="{{ url_for('book_club') }}">Book clubs</a>
+            <a href = "my_reviews">My Reviews</a>
+            <a href = "profile">Profile</a>
+            <div class = review><a href = "review">Make a Review</a></div>
+            <a href=" search_users ">Search Users</a>
+            <div class = logout><a href="{{ url_for('logout') }}">Log Out</a></div>
+        {% else %}
+            <div class = signup><a href = "signup">Sign Up</a></div>
+            <div class = signin><a href="login">Log in</a> </div>
+        {% endif %}
+    </div>
+    <div class = "footernav">
+        {% if session['username']%}
+            <div class = footerlogout><a href="{{ url_for('logout') }}">Log Out</a></div>
+        {% else %}
+            <div class = footersignup><a href = "signup">Sign Up</a></div>
+            <div class = footersignin><a href="login">Log in</a></div>
+        {% endif %}
+    </div>
+
+    <div class='background'>
+        {% if clubs %}
+        <div class="club-results">
+            <h2>Clubs</h2>
+            <ul>
+                {% for club in clubs %}
+                <li>
+
+                    <div id="book-club">
+                        <form action="{{ url_for('book_club') }}" method="GET">
+                            <input type="hidden" name="club_id" value="{{ club.club_id }}">
+                            <input type="hidden" name="club_name" value="{{ club.club_name }}">
+                        </form>
+                        <form action="{{ url_for('book_club') }}" method="POST">
+                                <input type="hidden" name="club_id" value="{{ club[1]}}">
+                                <input type="hidden" name="user_id" value="{{ club[2]}}">
+                                <button type="submit">Join the club!</button>
+                        </form>
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                          {% if messages %}
+                            <div class="flash-messages">
+                              {% for category, message in messages %}
+                            <div class="flash {{ category }}">{{ message }}</div>
+                          {% endfor %}
+                            </div>
+                          {% endif %}
+                        {% endwith %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {%endif%}
+    </div>
+
+</body>
+</html>

@@ -75,6 +75,39 @@ def initializeDb():
             )
     ''')
 
+    cursor.execute("DROP TABLE IF EXISTS bookClubs")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS bookClubs (
+        club_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        username TEXT NOT NULL,
+        club_name TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES userLogins(id) ON DELETE CASCADE,   
+        FOREIGN KEY (username) REFERENCES userLogins(username) ON DELETE CASCADE   
+    )''')
+
+    # example data
+    user_id = 1
+    username = "John"
+    club_name = 'Books!'
+    cursor.execute('''
+        INSERT INTO bookClubs (user_id, username, club_name)
+        VALUES (?, ?, ?)
+    ''', (user_id, username, club_name))
+    conn.commit()
+
+    cursor.execute('''SELECT * FROM bookClubs''')
+    clubs= cursor.fetchall()
+    print(f"Clubs and people: {clubs}")
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS clubMembers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    club_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (club_id) REFERENCES bookClubs(club_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES userLogins(id) ON DELETE CASCADE
+    )''')
+
     cursor.execute('''
         CREATE TRIGGER IF NOT EXISTS update_book_rating
         AFTER INSERT ON Reviews

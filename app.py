@@ -671,6 +671,35 @@ def accept_friend():
 
     return redirect(url_for("profile"))
 
+@app.route('/book_club', methods=["GET", "POST"])
+def book_club():
+    username = session.get('username')
+    conn = sqlite3.connect('Scriptoria.db')
+    cursor = conn.cursor()
+    print(f"Username = {username}")
+    cursor.execute("SELECT * FROM bookClubs")
+    clubs = cursor.fetchall()
+    if request.method == "POST":
+        club_id = request.form.get('club_id')
+        user_id = request.form.get('user_id')
+
+
+        print(f"Id = {club_id}")
+        print(f"Id = {user_id}")
+        cursor.execute('''
+            SELECT * FROM clubMembers WHERE club_id = ? AND user_id = ?
+        ''', (club_id, user_id,))
+        existing = cursor.fetchone()
+        if existing:
+            flash("You've joined the club", 'error')
+        else:
+            cursor.execute('''INSERT INTO clubMembers (club_id, user_id)
+                VALUES (?, ?)''', (club_id,user_id,))
+            conn.commit()
+            flash("You've joined the club!", "success")
+        conn.close()
+    return render_template('book_club.html', clubs=clubs)
+
 @app.route('/user/<int:user_id>', methods=["GET","POST"])
 def user_profile(user_id):
     session_user_id = session.get("user_id")
